@@ -49,6 +49,7 @@ export function useDashboardStats(month) {
       .from('transactions')
       .select('transaction_date, amount')
       .lt('amount', 0)
+      .neq('category', 'internal_transfer')
       .gte('transaction_date', start)
       .then(({ data }) => {
         if (!data) return

@@ -42,9 +42,9 @@ export default function SpendingPieChart({ data }) {
         </PieChart>
       </ResponsiveContainer>
 
-      {/* Mini legend — top 4 */}
+      {/* Mini legend — top 6 */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-1">
-        {data.slice(0, 4).map((item) => (
+        {data.slice(0, 6).map((item) => (
           <div key={item.category} className="flex items-center gap-2 text-xs text-white/55">
             <div
               className="w-2.5 h-2.5 rounded-full shrink-0"

@@ -38,13 +38,10 @@ export function detectInternalTransfer(description, userAccountNumbers = []) {
   const isTransfer = lower.includes('digital transf') || lower.includes('digital payment dt') || lower.includes('digital payment cr')
   if (!isTransfer) return false
   const normalizedDesc = lower.replace(/[-\s]/g, '')
-  const matched = userAccountNumbers.some((acc) => {
+  return userAccountNumbers.some((acc) => {
     const normalizedAcc = acc.replace(/[-\s]/g, '')
-    const hit = normalizedDesc.includes(normalizedAcc)
-    console.log('[detectInternalTransfer] desc:', normalizedDesc, '| acc:', normalizedAcc, '| hit:', hit)
-    return hit
+    return normalizedDesc.includes(normalizedAcc)
   })
-  return matched
 }
 
 // ─── Override matching ────────────────────────────────────────────────────────
@@ -170,7 +167,6 @@ export async function categorizeAll(transactions, overrides = [], onProgress, op
 
   // Tier 0 — internal transfer detection (own account numbers)
   const ownAccounts = options?.userAccountNumbers ?? []
-  console.log('[categorizeAll] userAccountNumbers:', ownAccounts)
   const remainingAfterTransfer = []
   for (const t of transactions) {
     if (detectInternalTransfer(t.description, ownAccounts)) {
