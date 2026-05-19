@@ -10,16 +10,28 @@ const AUTH_ERROR_MAP = {
   'New password should be different from the old password': 'Your new password must be different from your current one.',
   'Auth session missing':                           'Your session has expired. Please sign in again.',
   'signup_disabled':                                'New sign-ups are currently disabled.',
-  // Supabase DB errors
-  'does not exist':                                 'A required database column is missing. Please run the latest SQL migration.',
-  'violates row-level security':                    'Permission denied. Check your Supabase RLS policies.',
-  'PGRST116':                                       'Profile record not found. Please try saving again.',
+  // Supabase / PostgREST DB errors (matched against error.message)
+  'does not exist':              'A required database column is missing. Please run the latest SQL migration.',
+  'violates row-level security': 'Permission denied. Check your Supabase RLS policies for this table.',
+  'permission denied':           'Permission denied. Run the SQL migration to grant table access to the authenticated role.',
+  'PGRST116':                    'Record not found. Please try saving again.',
+}
+
+// PostgreSQL error codes that carry more reliable signal than message text.
+const PG_CODE_MAP = {
+  '42501': 'Permission denied. Run the SQL migration to grant table access to the authenticated role.',
+  '42703': 'A required database column is missing. Please run the latest SQL migration.',
+  '23505': 'A record with these details already exists.',
 }
 
 export function mapErrorToFriendly(error) {
   if (!error) return 'Something went wrong. Please try again.'
 
   const message = error?.message ?? String(error)
+  const code    = String(error?.code ?? '')
+
+  // Check PostgreSQL / PostgREST code first — more reliable than substring matching.
+  if (PG_CODE_MAP[code]) return PG_CODE_MAP[code]
 
   for (const [key, friendly] of Object.entries(AUTH_ERROR_MAP)) {
     if (message.includes(key)) return friendly
