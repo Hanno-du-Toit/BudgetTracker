@@ -7,17 +7,17 @@ const MODEL   = 'claude-haiku-4-5-20251001'
 // ─── Rule-based categorization ────────────────────────────────────────────────
 
 const CATEGORY_RULES = [
-  { category: 'groceries',    keywords: ['checkers', 'woolworths', 'pick n pay', 'pnp', 'shoprite', 'spar', 'food lover', 'sixty60'] },
-  { category: 'fuel',         keywords: ['engen', 'shell', 'bp', 'caltex', 'sasol', 'total'] },
-  { category: 'dining',       keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur'] },
-  { category: 'transport',    keywords: ['uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll'] },
-  { category: 'shopping',     keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on'] },
-  { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema'] },
-  { category: 'healthcare',   keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist'] },
-  { category: 'insurance',    keywords: ['outsurance', 'discovery', 'momentum', 'sanlam', 'old mutual', 'hollard'] },
-  { category: 'banking_fees', keywords: ['service fee', 'monthly fee', 'transaction fee', 'bank charge', 'notification fee', 'sms fee'] },
-  { category: 'utilities',    keywords: ['eskom', 'municipality', 'water', 'electricity', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre'] },
-  { category: 'income',       keywords: ['salary', 'payroll', 'payment received', 'credit'] },
+  { category: 'groceries',     keywords: ['checkers', 'woolworths', 'pick n pay', 'pnp', 'shoprite', 'spar', 'food lover', 'sixty60', 'woollies'] },
+  { category: 'fuel',          keywords: ['engen', 'shell', 'bp ', 'caltex', 'sasol', 'total garage', 'astron'] },
+  { category: 'dining',        keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur', 'fishaways', 'galito'] },
+  { category: 'transport',     keywords: ['uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll', 'sanral'] },
+  { category: 'shopping',      keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on', 'game store', 'makro', 'builder', 'pep store', 'ackermans'] },
+  { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema', 'nu metro', 'ster kinekor', 'playtomic'] },
+  { category: 'healthcare',    keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist', 'medcross'] },
+  { category: 'insurance',     keywords: ['outsurance', 'discovery life', 'momentum', 'sanlam', 'old mutual', 'hollard', 'miway', 'pps '] },
+  { category: 'banking_fees',  keywords: ['monthly fee', 'bank charge', 'notific fee', 'notification fee', 'transaction fee', 'service fee', 'sms fee', 'notifyme', 'card fee', 'annual fee'] },
+  { category: 'utilities',     keywords: ['eskom', 'municipality', 'water ', 'electricity', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre', 'prepaid', 'airtime', 'rain '] },
+  { category: 'income',        keywords: ['salary', 'payroll', 'payment received', 'acb credit', 'digital transf cr'] },
 ]
 
 export function ruleBasedCategorize(description, amount) {
