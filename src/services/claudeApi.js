@@ -9,15 +9,16 @@ const MODEL   = 'claude-haiku-4-5-20251001'
 const CATEGORY_RULES = [
   { category: 'groceries',     keywords: ['checkers', 'woolworths', 'pick n pay', 'pnp', 'shoprite', 'spar', 'food lover', 'sixty60', 'woollies'] },
   { category: 'fuel',          keywords: ['engen', 'shell', 'bp ', 'caltex', 'sasol', 'total garage', 'astron'] },
-  { category: 'dining',        keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur', 'fishaways', 'galito', 'draak'] },
+  { category: 'dining',        keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur', 'fishaways', 'galito', 'draak', 'toro north', 'klipoog', 'kafeteria', 'serv preto'] },
   { category: 'transport',     keywords: ['uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll', 'sanral'] },
-  { category: 'shopping',      keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on', 'game store', 'makro', 'builder', 'pep store', 'ackermans'] },
-  { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema', 'nu metro', 'ster kinekor', 'playtomic'] },
+  { category: 'shopping',      keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on', 'game store', 'makro', 'builder', 'pep store', 'ackermans', 'cum books', 'kloppers'] },
+  { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema', 'nu metro', 'ster kinekor', 'playtomic', 'padel circle', 'padel'] },
   { category: 'healthcare',    keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist', 'medcross'] },
   { category: 'insurance',     keywords: ['outsurance', 'discovery life', 'momentum', 'sanlam', 'old mutual', 'hollard', 'miway', 'pps '] },
   { category: 'subscriptions', keywords: ['virgin active', 'virgin act', 'netcash'] },
   { category: 'banking_fees',  keywords: ['monthly fee', 'bank charge', 'notific fee', 'notification fee', 'transaction fee', 'service fee', 'sms fee', 'notifyme', 'card fee', 'annual fee', 'monthly acc fee', 'acc fee'] },
   { category: 'utilities',     keywords: ['eskom', 'municipality', 'water ', 'electricity', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre', 'prepaid', 'airtime', 'rain '] },
+  { category: 'investments',   keywords: ['easy equities', 'ee-', 'easyequities', 'etf', 'satrix'] },
   { category: 'income',        keywords: ['salary', 'payroll', 'payment received', 'acb credit', 'digital transf cr'] },
 ]
 
