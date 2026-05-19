@@ -79,7 +79,7 @@ function UploadsPanel({ statements, onDelete }) {
                   className="flex items-center justify-between gap-3 bg-surface-100 rounded-xl px-3 py-2.5"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-lg shrink-0">{s.file_type === 'pdf' ? '📄' : '📊'}</span>
+                    <span className="text-lg shrink-0">📊</span>
                     <div className="min-w-0">
                       <p className="text-sm text-white truncate">{s.file_name}</p>
                       <p className="text-xs text-white/35 mt-0.5">

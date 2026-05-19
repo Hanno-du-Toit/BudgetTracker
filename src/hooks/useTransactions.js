@@ -9,8 +9,8 @@ function lastDayOfMonth(month) {
   return String(new Date(year, mon, 0).getDate()).padStart(2, '0')
 }
 
-function detectFileType(fileName) {
-  return fileName?.toLowerCase().endsWith('.pdf') ? 'pdf' : 'csv'
+function detectFileType(_fileName) {
+  return 'csv'
 }
 
 function normalizePattern(description) {

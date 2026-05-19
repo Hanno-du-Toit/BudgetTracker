@@ -6,8 +6,8 @@ export const MAX_SUPABASE_INSERT_BATCH = 500
 
 export const MAX_CATEGORY_OVERRIDES_IN_PROMPT = 20
 
-export const ACCEPTED_FILE_TYPES = ['text/csv', 'application/pdf', 'application/vnd.ms-excel']
-export const ACCEPTED_FILE_EXTENSIONS = ['.csv', '.pdf']
+export const ACCEPTED_FILE_TYPES = ['text/csv', 'application/vnd.ms-excel']
+export const ACCEPTED_FILE_EXTENSIONS = ['.csv']
 
 export const SEARCH_DEBOUNCE_MS = 300
 export const TOAST_DURATION_MS = 4000

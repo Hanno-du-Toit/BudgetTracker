@@ -253,6 +253,12 @@ function PreferencesSection({ profile, onSave }) {
   const [saving, setSaving]         = useState(false)
   const [error,  setError]          = useState('')
 
+  // Sync when profile loads or changes (mirrors the same pattern in ProfileSection).
+  useEffect(() => {
+    setCurrency(profile?.preferred_currency   ?? DEFAULT_CURRENCY)
+    setDateFormat(profile?.preferred_date_format ?? DEFAULT_DATE_FORMAT)
+  }, [profile])
+
   const origCurrency   = profile?.preferred_currency   ?? DEFAULT_CURRENCY
   const origDateFormat = profile?.preferred_date_format ?? DEFAULT_DATE_FORMAT
   const isDirty        = currency !== origCurrency || dateFormat !== origDateFormat

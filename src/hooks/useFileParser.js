@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react'
 import { parseCsv } from '@/services/csvParser'
-import { parsePdf } from '@/services/pdfParser'
 import { categorizeAll } from '@/services/claudeApi'
 import { detectColumns } from '@/utils/columnDetector'
 import { normalizeRows } from '@/utils/transactionNormalizer'
@@ -9,12 +8,11 @@ import { supabase } from '@/services/supabase'
 
 const PARSE_ERRORS = {
   file_too_large:     'This file is too large. Please export a smaller date range from your bank.',
-  unsupported_format: "We only support CSV and PDF files. Try exporting your statement from your bank's app or website.",
+  unsupported_format: 'Only CSV files are supported. Export your statement as CSV from your bank\'s app or internet banking.',
   no_transactions:    "No transactions were found in this file. Make sure you're uploading a bank statement, not an account summary.",
-  no_date_column:     "We couldn't find a date column in this file. It may be in an unsupported format — try exporting as CSV.",
-  no_table_found:     "We couldn't find a transaction table in this PDF. Try exporting as CSV instead — most banks support it.",
+  no_date_column:     "We couldn't find a date column in this file. It may be in an unsupported format — try a different CSV export from your bank.",
   ai_failed:          "AI categorization ran into an issue. Your transactions are still saved — you can edit categories manually.",
-  parse_failed:       'We couldn\'t read this file. It may be password-protected or corrupted. Try a different export.',
+  parse_failed:       'We couldn\'t read this file. It may be corrupted or in an unexpected format. Try a different export.',
 }
 
 function mapParseError(err) {
@@ -22,11 +20,9 @@ function mapParseError(err) {
   return PARSE_ERRORS[key] ?? PARSE_ERRORS.parse_failed
 }
 
-function detectFileType(file) {
+function isCSV(file) {
   const name = file.name.toLowerCase()
-  if (file.type === 'text/csv' || file.type === 'application/vnd.ms-excel' || name.endsWith('.csv')) return 'csv'
-  if (file.type === 'application/pdf' || name.endsWith('.pdf')) return 'pdf'
-  return null
+  return file.type === 'text/csv' || file.type === 'application/vnd.ms-excel' || name.endsWith('.csv')
 }
 
 export function useFileParser() {
@@ -49,15 +45,12 @@ export function useFileParser() {
     try {
       // 1 — Validate
       if (file.size > MAX_FILE_SIZE_BYTES) throw new Error('file_too_large')
-      const fileType = detectFileType(file)
-      if (!fileType) throw new Error('unsupported_format')
+      if (!isCSV(file)) throw new Error('unsupported_format')
 
       // 2 — Parse raw rows
       setParseStep('Reading your file…')
       setProgress(10)
-      const { headers, rows } = fileType === 'csv'
-        ? await parseCsv(file)
-        : await parsePdf(file)
+      const { headers, rows } = await parseCsv(file)
       setProgress(30)
 
       // 3 — Detect columns + normalise
@@ -102,7 +95,6 @@ export function useFileParser() {
     }
   }, [])
 
-  // Allows inline edits in TransactionReview before saving; tracks which were manually changed
   const updateTransactionCategory = useCallback((id, category) => {
     setTransactions((prev) =>
       prev.map((t) => (t.id === id ? { ...t, category } : t))
