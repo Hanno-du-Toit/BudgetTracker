@@ -43,12 +43,24 @@ export default function UploadPage() {
   async function handleConfirm() {
     setIsConfirming(true)
     try {
-      await upsertMany(transactions, fileName, manuallyChangedIds)
-      toast.success(`${transactions.length} transactions saved successfully!`)
+      const { savedCount, duplicateCount } = await upsertMany(transactions, fileName, manuallyChangedIds)
+
+      if (savedCount === 0) {
+        // Every transaction was already in the database
+        toast.error(
+          `All ${duplicateCount} transaction${duplicateCount !== 1 ? 's' : ''} already exist — nothing was saved.`
+        )
+        return
+      }
+
+      const msg = duplicateCount > 0
+        ? `${savedCount} saved, ${duplicateCount} duplicate${duplicateCount !== 1 ? 's' : ''} skipped.`
+        : `${savedCount} transaction${savedCount !== 1 ? 's' : ''} saved successfully!`
+      toast.success(msg)
       navigate(ROUTES.TRANSACTIONS)
     } catch (err) {
       console.error('[UploadPage] handleConfirm error:', err)
-      const msg = err?.message ?? ''
+      const msg   = err?.message ?? ''
       const lower = msg.toLowerCase()
       if (lower.includes('network') || lower.includes('fetch')) {
         toast.error('Connection error. Please check your internet and try again.')
