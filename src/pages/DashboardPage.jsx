@@ -24,7 +24,7 @@ function SkeletonBlock({ className = '' }) {
 export default function DashboardPage() {
   const navigate = useNavigate()
   const [month, setMonth] = useState(CURRENT_MONTH)
-  const { loading, error, stats, availableMonths } = useDashboardStats(month)
+  const { loading, error, stats, availableMonths, byMonth } = useDashboardStats(month)
 
   const noDataAtAll    = !loading && !stats && availableMonths.length === 0
   const noDataForMonth = !loading && !stats && availableMonths.length > 0
@@ -134,7 +134,7 @@ export default function DashboardPage() {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               <SpendingPieChart data={stats.byCategory} />
-              <WeeklyBarChart   data={stats.byWeek} />
+              <WeeklyBarChart weekData={stats.byWeek} monthData={byMonth} />
             </div>
 
             {/* Bottom row */}

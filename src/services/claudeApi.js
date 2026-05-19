@@ -4,6 +4,46 @@ import { MAX_TRANSACTIONS_PER_BATCH, MAX_CATEGORY_OVERRIDES_IN_PROMPT } from '@/
 const API_URL = 'https://api.anthropic.com/v1/messages'
 const MODEL   = 'claude-haiku-4-5-20251001'
 
+// ─── Rule-based categorization ────────────────────────────────────────────────
+
+const CATEGORY_RULES = [
+  { category: 'groceries',    keywords: ['checkers', 'woolworths', 'pick n pay', 'pnp', 'shoprite', 'spar', 'food lover', 'sixty60'] },
+  { category: 'fuel',         keywords: ['engen', 'shell', 'bp', 'caltex', 'sasol', 'total'] },
+  { category: 'dining',       keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur'] },
+  { category: 'transport',    keywords: ['uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll'] },
+  { category: 'shopping',     keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on'] },
+  { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema'] },
+  { category: 'healthcare',   keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist'] },
+  { category: 'insurance',    keywords: ['outsurance', 'discovery', 'momentum', 'sanlam', 'old mutual', 'hollard'] },
+  { category: 'banking_fees', keywords: ['service fee', 'monthly fee', 'transaction fee', 'bank charge', 'notification fee', 'sms fee'] },
+  { category: 'utilities',    keywords: ['eskom', 'municipality', 'water', 'electricity', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre'] },
+  { category: 'income',       keywords: ['salary', 'payroll', 'payment received', 'credit'] },
+]
+
+export function ruleBasedCategorize(description, amount) {
+  const lower = description.toLowerCase()
+  for (const rule of CATEGORY_RULES) {
+    if (rule.category === 'income' && amount <= 0) continue
+    if (rule.keywords.some((kw) => lower.includes(kw))) return rule.category
+  }
+  return null
+}
+
+// ─── Override matching ────────────────────────────────────────────────────────
+
+function normalizeDesc(str) {
+  return str.toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+function findOverrideMatch(description, overrides) {
+  const desc = normalizeDesc(description)
+  for (const o of overrides) {
+    const pat = normalizeDesc(o.description_pattern)
+    if (pat && (desc.includes(pat) || pat.includes(desc))) return o.category
+  }
+  return null
+}
+
 // ─── Prompt ──────────────────────────────────────────────────────────────────
 
 export function buildPrompt(transactions, overrides = []) {
@@ -30,7 +70,7 @@ Rules:
 - Return ONLY a valid JSON array. No markdown, no explanation, no other text.
 - Format: [{"id":"<id>","category":"<slug>"}]
 - Positive amounts are credits/income → use "income" unless clearly a refund or reversal
-- South African context: "SPAR", "PNP", "WOOLWORTHS FOOD" → groceries; "ENGEN", "SHELL", "BP", "SASOL" → fuel; "UBER", "BOLT" → transport; "NETFLIX", "DSTV", "SPOTIFY" → subscriptions
+- South African context: "SPAR", "PNP", "WOOLWORTHS FOOD" → groceries; "ENGEN", "SHELL", "BP", "SASOL" → fuel; "UBER", "BOLT" → transport; "NETFLIX", "DSTV", "SPOTIFY" → entertainment; "OUTSURANCE", "DISCOVERY", "SANLAM" → insurance; "SERVICE FEE", "BANK CHARGE" → banking_fees
 - Use "other" only if genuinely uncertain
 ${knownMappings}
 Transactions to categorize:
@@ -98,25 +138,57 @@ async function categorizeBatch(transactions, overrides) {
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Categorize all transactions in batches of MAX_TRANSACTIONS_PER_BATCH.
- * Calls onProgress(0–100) after each completed batch.
- * Returns a Map<id, category>. Any transaction that Claude doesn't return a
- * category for keeps its existing category (falls back to 'other').
+ * Categorize all transactions using a three-tier approach:
+ *   1. User's saved overrides (hard match — highest priority)
+ *   2. Rule-based SA keyword matching
+ *   3. Claude AI for anything remaining
+ *
+ * Calls onProgress(0–100) across the full pipeline.
+ * Returns a Map<id, category>.
  */
 export async function categorizeAll(transactions, overrides = [], onProgress) {
-  const results = new Map()
-  const batches = []
+  const results  = new Map()
+  const forClaude = []
 
-  for (let i = 0; i < transactions.length; i += MAX_TRANSACTIONS_PER_BATCH) {
-    batches.push(transactions.slice(i, i + MAX_TRANSACTIONS_PER_BATCH))
-  }
-
-  for (let i = 0; i < batches.length; i++) {
-    const batchMap = await categorizeBatch(batches[i], overrides)
-    for (const [id, category] of batchMap) {
-      results.set(id, category)
+  // Tier 1 — user overrides (exact/partial normalised description match)
+  for (const t of transactions) {
+    const match = findOverrideMatch(t.description, overrides)
+    if (match) {
+      results.set(t.id, match)
+    } else {
+      forClaude.push(t)
     }
-    onProgress?.(Math.round(((i + 1) / batches.length) * 100))
+  }
+  onProgress?.(10)
+
+  // Tier 2 — rule-based keyword matching
+  const forAI = []
+  for (const t of forClaude) {
+    const category = ruleBasedCategorize(t.description, t.amount)
+    if (category) {
+      results.set(t.id, category)
+    } else {
+      forAI.push(t)
+    }
+  }
+  onProgress?.(20)
+
+  // Tier 3 — Claude AI for remaining transactions
+  if (forAI.length > 0) {
+    const batches = []
+    for (let i = 0; i < forAI.length; i += MAX_TRANSACTIONS_PER_BATCH) {
+      batches.push(forAI.slice(i, i + MAX_TRANSACTIONS_PER_BATCH))
+    }
+
+    for (let i = 0; i < batches.length; i++) {
+      const batchMap = await categorizeBatch(batches[i], overrides)
+      for (const [id, category] of batchMap) {
+        results.set(id, category)
+      }
+      onProgress?.(20 + Math.round(((i + 1) / batches.length) * 80))
+    }
+  } else {
+    onProgress?.(100)
   }
 
   return results

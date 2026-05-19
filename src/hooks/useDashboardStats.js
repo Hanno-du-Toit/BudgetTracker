@@ -18,6 +18,7 @@ function weekLabel(dateStr) {
 export function useDashboardStats(month) {
   const [transactions,    setTransactions]    = useState([])
   const [availableMonths, setAvailableMonths] = useState([])
+  const [byMonth,         setByMonth]         = useState([])
   const [txLoading,       setTxLoading]       = useState(true)
   const [monthsLoading,   setMonthsLoading]   = useState(true)
   const [error,           setError]           = useState(null)
@@ -35,6 +36,35 @@ export function useDashboardStats(month) {
           setAvailableMonths(unique)
         }
         setMonthsLoading(false)
+      })
+  }, [])
+
+  // Fetch rolling 12-month expense totals for the monthly chart view
+  useEffect(() => {
+    const d = new Date()
+    d.setMonth(d.getMonth() - 11)
+    const start = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+
+    supabase
+      .from('transactions')
+      .select('transaction_date, amount')
+      .lt('amount', 0)
+      .gte('transaction_date', start)
+      .then(({ data }) => {
+        if (!data) return
+        const monthMap = {}
+        for (const t of data) {
+          const m = t.transaction_date.slice(0, 7)
+          monthMap[m] = (monthMap[m] ?? 0) + Math.abs(t.amount)
+        }
+        const result = Object.entries(monthMap)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([m, spend]) => {
+            const [yr, mo] = m.split('-').map(Number)
+            const label = new Date(yr, mo - 1, 1).toLocaleString('en', { month: 'short' }) + " '" + String(yr).slice(2)
+            return { month: m, label, spend }
+          })
+        setByMonth(result)
       })
   }, [])
 
@@ -110,5 +140,6 @@ export function useDashboardStats(month) {
     error,
     stats,
     availableMonths,
+    byMonth,
   }
 }

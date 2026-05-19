@@ -8,6 +8,8 @@ export const CATEGORIES = [
   { slug: 'entertainment', label: 'Entertainment', icon: '🎬', color: '#a78bfa' },
   { slug: 'shopping',      label: 'Shopping',      icon: '🛍️', color: '#e879f9' },
   { slug: 'healthcare',    label: 'Healthcare',    icon: '🏥', color: '#2dd4bf' },
+  { slug: 'insurance',     label: 'Insurance',     icon: '🛡️', color: '#64748b' },
+  { slug: 'banking_fees',  label: 'Banking Fees',  icon: '🏦', color: '#475569' },
   { slug: 'education',     label: 'Education',     icon: '📚', color: '#4ade80' },
   { slug: 'travel',        label: 'Travel',        icon: '✈️', color: '#fb7185' },
   { slug: 'subscriptions', label: 'Subscriptions', icon: '📱', color: '#818cf8' },
