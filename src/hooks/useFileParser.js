@@ -70,6 +70,10 @@ export function useFileParser() {
       const { data: overrides } = await supabase
         .from('category_overrides')
         .select('description_pattern, category')
+      const { data: accounts } = await supabase
+        .from('user_accounts')
+        .select('account_number')
+      const userAccountNumbers = (accounts ?? []).map((a) => a.account_number)
       setProgress(55)
 
       // 5 — AI categorize (progress callback maps 0-100 → 55-95%)
@@ -77,7 +81,8 @@ export function useFileParser() {
       const categoryMap = await categorizeAll(
         txns,
         overrides ?? [],
-        (pct) => setProgress(55 + Math.round(pct * 0.4))
+        (pct) => setProgress(55 + Math.round(pct * 0.4)),
+        { userAccountNumbers }
       )
 
       // 6 — Apply categories; fall back to 'other' for any Claude missed

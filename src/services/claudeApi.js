@@ -31,6 +31,15 @@ export function ruleBasedCategorize(description, amount) {
   return null
 }
 
+// ─── Internal transfer detection ─────────────────────────────────────────────
+
+export function detectInternalTransfer(description, userAccountNumbers = []) {
+  const lower = description.toLowerCase()
+  const isTransfer = lower.includes('digital transf') || lower.includes('digital payment dt') || lower.includes('digital payment cr')
+  if (!isTransfer) return false
+  return userAccountNumbers.some((acc) => lower.includes(acc.toLowerCase()))
+}
+
 // ─── Override matching ────────────────────────────────────────────────────────
 
 function normalizeDesc(str) {
@@ -148,12 +157,23 @@ async function categorizeBatch(transactions, overrides) {
  * Calls onProgress(0–100) across the full pipeline.
  * Returns a Map<id, category>.
  */
-export async function categorizeAll(transactions, overrides = [], onProgress) {
-  const results  = new Map()
+export async function categorizeAll(transactions, overrides = [], onProgress, options = {}) {
+  const results   = new Map()
   const forClaude = []
 
-  // Tier 1 — user overrides (exact/partial normalised description match)
+  // Tier 0 — internal transfer detection (own account numbers)
+  const ownAccounts = options?.userAccountNumbers ?? []
+  const remainingAfterTransfer = []
   for (const t of transactions) {
+    if (detectInternalTransfer(t.description, ownAccounts)) {
+      results.set(t.id, 'internal_transfer')
+    } else {
+      remainingAfterTransfer.push(t)
+    }
+  }
+
+  // Tier 1 — user overrides (exact/partial normalised description match)
+  for (const t of remainingAfterTransfer) {
     const match = findOverrideMatch(t.description, overrides)
     if (match) {
       results.set(t.id, match)

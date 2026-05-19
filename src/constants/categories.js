@@ -13,9 +13,10 @@ export const CATEGORIES = [
   { slug: 'education',     label: 'Education',     icon: '📚', color: '#4ade80' },
   { slug: 'travel',        label: 'Travel',        icon: '✈️', color: '#fb7185' },
   { slug: 'subscriptions', label: 'Subscriptions', icon: '📱', color: '#818cf8' },
-  { slug: 'investments',   label: 'Investments',   icon: '📈', color: '#10b981' },
-  { slug: 'income',        label: 'Income',        icon: '💰', color: '#22c55e' },
-  { slug: 'other',         label: 'Other',         icon: '📦', color: '#94a3b8' },
+  { slug: 'investments',      label: 'Investments',      icon: '📈', color: '#10b981' },
+  { slug: 'internal_transfer', label: 'Internal Transfer', icon: '🔄', color: '#6b7280' },
+  { slug: 'income',           label: 'Income',           icon: '💰', color: '#22c55e' },
+  { slug: 'other',            label: 'Other',            icon: '📦', color: '#94a3b8' },
 ]
 
 export const CATEGORY_COLORS = Object.fromEntries(

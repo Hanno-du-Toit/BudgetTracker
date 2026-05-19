@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/context/ToastContext'
 import { ROUTES, SLIDE_UP, STAGGER_CONTAINER, AVATAR_COLORS, CURRENCY_OPTIONS, DATE_FORMAT_OPTIONS, DEFAULT_CURRENCY, DEFAULT_DATE_FORMAT } from '@/constants'
+import { supabase } from '@/services/supabase'
 import AppShell from '@/components/layout/AppShell'
 import PageWrapper from '@/components/layout/PageWrapper'
 import Button from '@/components/ui/Button'
@@ -305,6 +306,120 @@ function PreferencesSection({ profile, onSave }) {
   )
 }
 
+// ── My Accounts section ────────────────────────────────────────────────────────
+
+function MyAccountsSection() {
+  const { toast }                     = useToast()
+  const [accounts, setAccounts]       = useState([])
+  const [nickname, setNickname]       = useState('')
+  const [accNumber, setAccNumber]     = useState('')
+  const [loading, setLoading]         = useState(true)
+  const [saving, setSaving]           = useState(false)
+  const [error, setError]             = useState('')
+
+  useEffect(() => {
+    supabase
+      .from('user_accounts')
+      .select('id, account_number, account_name')
+      .order('created_at', { ascending: true })
+      .then(({ data }) => {
+        setAccounts(data ?? [])
+        setLoading(false)
+      })
+  }, [])
+
+  async function handleAdd(e) {
+    e.preventDefault()
+    const trimName = nickname.trim()
+    const trimNum  = accNumber.trim()
+    if (!trimName) { setError('Enter an account nickname.'); return }
+    if (!trimNum)  { setError('Enter an account number.'); return }
+    setError('')
+    setSaving(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const { data, error: err } = await supabase
+      .from('user_accounts')
+      .insert({ user_id: session.user.id, account_number: trimNum, account_name: trimName })
+      .select('id, account_number, account_name')
+      .single()
+    setSaving(false)
+    if (err) {
+      setError(err.message.includes('unique') ? 'That account number is already saved.' : err.message)
+    } else {
+      setAccounts((prev) => [...prev, data])
+      setNickname('')
+      setAccNumber('')
+      toast.success('Account added.')
+    }
+  }
+
+  async function handleDelete(id) {
+    const { error: err } = await supabase.from('user_accounts').delete().eq('id', id)
+    if (!err) {
+      setAccounts((prev) => prev.filter((a) => a.id !== id))
+      toast.success('Account removed.')
+    }
+  }
+
+  return (
+    <SettingsSection
+      title="My Accounts"
+      description="Transfers to/from these accounts will be categorized as Internal Transfer and excluded from your spending totals."
+    >
+      {!loading && accounts.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {accounts.map((a) => (
+            <li key={a.id} className="flex items-center justify-between gap-3 bg-white/[0.04] rounded-xl px-3 py-2.5">
+              <div>
+                <p className="text-sm font-medium text-white">{a.account_name}</p>
+                <p className="text-xs text-white/40 font-mono mt-0.5">{a.account_number}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDelete(a.id)}
+                className="text-xs text-white/30 hover:text-red-400 transition-colors shrink-0"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!loading && accounts.length === 0 && (
+        <p className="text-sm text-white/30">No accounts saved yet.</p>
+      )}
+
+      <form onSubmit={handleAdd} className="flex flex-col gap-3">
+        <Input
+          label="Account nickname"
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+          placeholder="e.g. ABSA Cheque"
+          maxLength={60}
+        />
+        <Input
+          label="Account number"
+          value={accNumber}
+          onChange={(e) => setAccNumber(e.target.value)}
+          placeholder="e.g. 92-1812-7811"
+          maxLength={40}
+        />
+        {error && (
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <span>⚠</span> {error}
+          </p>
+        )}
+        <div>
+          <Button type="submit" isLoading={saving}>
+            Add account
+          </Button>
+        </div>
+      </form>
+    </SettingsSection>
+  )
+}
+
 // ── Danger zone ────────────────────────────────────────────────────────────────
 
 function DangerZone({ onSignOut }) {
@@ -419,6 +534,7 @@ export default function SettingsPage() {
               profile={profile}
               onSave={handlePreferencesSave}
             />
+            <MyAccountsSection />
             <DangerZone
               onSignOut={handleSignOut}
             />

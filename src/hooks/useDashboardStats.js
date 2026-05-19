@@ -97,8 +97,8 @@ export function useDashboardStats(month) {
   const stats = useMemo(() => {
     if (!transactions.length) return null
 
-    const expenses = transactions.filter((t) => t.amount < 0)
-    const incomes  = transactions.filter((t) => t.amount > 0)
+    const expenses = transactions.filter((t) => t.amount < 0 && t.category !== 'internal_transfer')
+    const incomes  = transactions.filter((t) => t.amount > 0 && t.category !== 'internal_transfer')
 
     const totalSpend  = expenses.reduce((s, t) => s + Math.abs(t.amount), 0)
     const totalIncome = incomes.reduce((s, t) => s + t.amount, 0)
