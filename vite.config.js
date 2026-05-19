@@ -13,14 +13,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'pdfjs': ['pdfjs-dist'],
-          'recharts': ['recharts'],
+          'recharts':      ['recharts'],
           'framer-motion': ['framer-motion'],
         },
       },
     },
-  },
-  optimizeDeps: {
-    exclude: ['pdfjs-dist'],
   },
 })
