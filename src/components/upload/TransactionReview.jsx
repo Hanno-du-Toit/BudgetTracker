@@ -1,36 +1,27 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FADE_IN, LIST_ITEM, STAGGER_CONTAINER } from '@/constants/animation'
 import { formatCurrency, formatDate } from '@/utils/formatters'
+import CategoryBadge from '@/components/transactions/CategoryBadge'
+import EditCategoryModal from '@/components/transactions/EditCategoryModal'
 import Button from '@/components/ui/Button'
 
 function AmountCell({ amount }) {
   const isCredit = amount > 0
   return (
-    <span className={`font-medium tabular-nums ${isCredit ? 'text-green-400' : 'text-red-400'}`}>
-      {isCredit ? '+' : '−'} {formatCurrency(amount)}
-    </span>
-  )
-}
-
-function TypeBadge({ amount }) {
-  const isCredit = amount > 0
-  return (
-    <span className={`
-      text-[11px] px-2 py-0.5 rounded-full font-medium
-      ${isCredit
-        ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-        : 'bg-red-500/10 text-red-400 border border-red-500/20'}
-    `}>
-      {isCredit ? 'Credit' : 'Debit'}
+    <span className={`font-medium tabular-nums text-sm ${isCredit ? 'text-green-400' : 'text-red-400'}`}>
+      {isCredit ? '+' : '−'}{formatCurrency(amount)}
     </span>
   )
 }
 
 function SummaryStats({ transactions }) {
-  const debits  = transactions.filter((t) => t.amount < 0)
-  const credits = transactions.filter((t) => t.amount > 0)
-  const totalOut = debits.reduce((s, t) => s + Math.abs(t.amount), 0)
-  const totalIn  = credits.reduce((s, t) => s + t.amount, 0)
+  const totalOut = transactions
+    .filter((t) => t.amount < 0)
+    .reduce((s, t) => s + Math.abs(t.amount), 0)
+  const totalIn = transactions
+    .filter((t) => t.amount > 0)
+    .reduce((s, t) => s + t.amount, 0)
 
   return (
     <div className="grid grid-cols-3 gap-3 mb-5">
@@ -48,7 +39,21 @@ function SummaryStats({ transactions }) {
   )
 }
 
-export default function TransactionReview({ transactions, fileName, onConfirm, onCancel, isConfirming }) {
+export default function TransactionReview({
+  transactions,
+  fileName,
+  onConfirm,
+  onCancel,
+  onCategoryChange,
+  isConfirming,
+}) {
+  const [editingTxn, setEditingTxn] = useState(null)
+
+  function handleCategoryApply(id, category) {
+    onCategoryChange(id, category)
+    setEditingTxn(null)
+  }
+
   return (
     <motion.div {...FADE_IN} className="w-full flex flex-col gap-4">
       {/* Header */}
@@ -67,14 +72,18 @@ export default function TransactionReview({ transactions, fileName, onConfirm, o
 
       <SummaryStats transactions={transactions} />
 
+      <p className="text-xs text-white/30 -mt-2">
+        Click any category badge to change it before saving.
+      </p>
+
       {/* Table */}
       <div className="bg-surface-50 border border-white/5 rounded-2xl overflow-hidden">
-        {/* Column headers */}
-        <div className="grid grid-cols-[90px_1fr_120px_70px] gap-2 px-4 py-2.5 border-b border-white/5 text-[11px] text-white/30 uppercase tracking-wide">
+        {/* Column headers — category hidden on smallest screens */}
+        <div className="grid grid-cols-[80px_1fr_110px] sm:grid-cols-[80px_1fr_130px_110px] gap-2 px-4 py-2.5 border-b border-white/5 text-[11px] text-white/30 uppercase tracking-wide">
           <span>Date</span>
           <span>Description</span>
+          <span className="hidden sm:block">Category</span>
           <span className="text-right">Amount</span>
-          <span className="text-right">Type</span>
         </div>
 
         {/* Rows */}
@@ -88,26 +97,33 @@ export default function TransactionReview({ transactions, fileName, onConfirm, o
             <motion.div
               key={txn.id}
               variants={LIST_ITEM}
-              className="grid grid-cols-[90px_1fr_120px_70px] gap-2 px-4 py-3 items-center hover:bg-white/[0.02] transition-colors"
+              className="grid grid-cols-[80px_1fr_110px] sm:grid-cols-[80px_1fr_130px_110px] gap-2 px-4 py-3 items-center hover:bg-white/[0.02] transition-colors"
             >
-              <span className="text-xs text-white/50 tabular-nums">{formatDate(txn.date)}</span>
+              <span className="text-xs text-white/40 tabular-nums">{formatDate(txn.date)}</span>
+
               <span className="text-sm text-white truncate" title={txn.description}>
                 {txn.description}
               </span>
-              <span className="text-right">
-                <AmountCell amount={txn.amount} />
+
+              {/* Category — desktop only in this column; mobile inline below description */}
+              <span className="hidden sm:flex items-center">
+                <CategoryBadge
+                  category={txn.category}
+                  onClick={() => setEditingTxn(txn)}
+                />
               </span>
+
               <span className="flex justify-end">
-                <TypeBadge amount={txn.amount} />
+                <AmountCell amount={txn.amount} />
               </span>
             </motion.div>
           ))}
         </motion.div>
       </div>
 
-      {transactions.length > 10 && (
-        <p className="text-xs text-white/25 text-center">
-          Showing all {transactions.length} transactions — scroll to see more
+      {transactions.length > 8 && (
+        <p className="text-xs text-white/20 text-center">
+          {transactions.length} transactions — scroll to see all
         </p>
       )}
 
@@ -120,6 +136,15 @@ export default function TransactionReview({ transactions, fileName, onConfirm, o
           Save to my account
         </Button>
       </div>
+
+      {/* Edit category modal */}
+      <EditCategoryModal
+        isOpen={!!editingTxn}
+        onClose={() => setEditingTxn(null)}
+        transaction={editingTxn}
+        onSave={handleCategoryApply}
+        isSaving={false}
+      />
     </motion.div>
   )
 }

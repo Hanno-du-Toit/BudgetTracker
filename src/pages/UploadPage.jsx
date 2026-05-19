@@ -13,7 +13,11 @@ import TransactionReview from '@/components/upload/TransactionReview'
 import Button from '@/components/ui/Button'
 
 export default function UploadPage() {
-  const { status, progress, parseStep, transactions, error, fileName, parseFile, reset } = useFileParser()
+  const {
+    status, progress, parseStep, isAiStep,
+    transactions, error, fileName,
+    parseFile, reset, updateTransactionCategory,
+  } = useFileParser()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -77,7 +81,7 @@ export default function UploadPage() {
           {/* PARSING */}
           {status === 'parsing' && (
             <div key="parsing">
-              <ParseProgress progress={progress} parseStep={parseStep} />
+              <ParseProgress progress={progress} parseStep={parseStep} isAiStep={isAiStep} />
             </div>
           )}
 
@@ -89,6 +93,7 @@ export default function UploadPage() {
                 fileName={fileName}
                 onConfirm={handleConfirm}
                 onCancel={reset}
+                onCategoryChange={updateTransactionCategory}
                 isConfirming={isConfirming}
               />
             </div>
