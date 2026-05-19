@@ -65,7 +65,7 @@ VITE_CLAUDE_API_KEY=your-claude-api-key   # optional, for AI categorization
 
 ### 3. Run the database migrations
 
-In your Supabase SQL editor, run the migration files in order from the `supabase/migrations/` directory (or the SQL provided in the project docs).
+In your Supabase SQL editor, run the SQL migration blocks provided in the project's CLAUDE.md file.
 
 ### 4. Start the development server
 
