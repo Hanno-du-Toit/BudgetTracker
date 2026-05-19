@@ -19,7 +19,7 @@ const CATEGORY_RULES = [
   { category: 'banking_fees',  keywords: ['monthly fee', 'bank charge', 'notific fee', 'notification fee', 'transaction fee', 'service fee', 'sms fee', 'notifyme', 'card fee', 'annual fee', 'monthly acc fee', 'acc fee'] },
   { category: 'utilities',     keywords: ['eskom', 'municipality', 'water ', 'electricity', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre', 'prepaid', 'airtime', 'rain '] },
   { category: 'investments',   keywords: ['easy equities', 'ee-', 'easyequities', 'etf', 'satrix'] },
-  { category: 'income',        keywords: ['salary', 'payroll', 'payment received', 'acb credit', 'digital transf cr'] },
+  { category: 'income',        keywords: ['salary', 'payroll', 'payment received', 'acb credit'] },
 ]
 
 export function ruleBasedCategorize(description, amount) {
@@ -38,10 +38,13 @@ export function detectInternalTransfer(description, userAccountNumbers = []) {
   const isTransfer = lower.includes('digital transf') || lower.includes('digital payment dt') || lower.includes('digital payment cr')
   if (!isTransfer) return false
   const normalizedDesc = lower.replace(/[-\s]/g, '')
-  return userAccountNumbers.some((acc) => {
+  const matched = userAccountNumbers.some((acc) => {
     const normalizedAcc = acc.replace(/[-\s]/g, '')
-    return normalizedDesc.includes(normalizedAcc)
+    const hit = normalizedDesc.includes(normalizedAcc)
+    console.log('[detectInternalTransfer] desc:', normalizedDesc, '| acc:', normalizedAcc, '| hit:', hit)
+    return hit
   })
+  return matched
 }
 
 // ─── Override matching ────────────────────────────────────────────────────────
@@ -167,6 +170,7 @@ export async function categorizeAll(transactions, overrides = [], onProgress, op
 
   // Tier 0 — internal transfer detection (own account numbers)
   const ownAccounts = options?.userAccountNumbers ?? []
+  console.log('[categorizeAll] userAccountNumbers:', ownAccounts)
   const remainingAfterTransfer = []
   for (const t of transactions) {
     if (detectInternalTransfer(t.description, ownAccounts)) {
