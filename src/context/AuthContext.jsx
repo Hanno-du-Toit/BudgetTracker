@@ -95,6 +95,16 @@ export function AuthProvider({ children }) {
     return {}
   }
 
+  async function reauthenticate(password) {
+    if (!user) return { error: 'Not authenticated.' }
+    const { error } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password,
+    })
+    if (error) return { error: mapErrorToFriendly(error) }
+    return {}
+  }
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -106,6 +116,7 @@ export function AuthProvider({ children }) {
       sendPasswordReset,
       updatePassword,
       updateProfile,
+      reauthenticate,
     }}>
       {children}
     </AuthContext.Provider>
