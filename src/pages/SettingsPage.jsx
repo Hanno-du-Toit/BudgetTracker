@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/context/ToastContext'
-import { ROUTES, SLIDE_UP, STAGGER_CONTAINER, AVATAR_COLORS, CURRENCY_OPTIONS, DATE_FORMAT_OPTIONS } from '@/constants'
+import { ROUTES, SLIDE_UP, STAGGER_CONTAINER, AVATAR_COLORS, CURRENCY_OPTIONS, DATE_FORMAT_OPTIONS, DEFAULT_CURRENCY, DEFAULT_DATE_FORMAT } from '@/constants'
 import AppShell from '@/components/layout/AppShell'
 import PageWrapper from '@/components/layout/PageWrapper'
 import Button from '@/components/ui/Button'
@@ -239,13 +239,13 @@ function SecuritySection({ onChangePassword }) {
 // ── Preferences section ────────────────────────────────────────────────────────
 
 function PreferencesSection({ profile, onSave }) {
-  const [currency,   setCurrency]   = useState(profile?.preferred_currency   ?? 'USD')
-  const [dateFormat, setDateFormat] = useState(profile?.preferred_date_format ?? 'DD/MM/YYYY')
+  const [currency,   setCurrency]   = useState(profile?.preferred_currency   ?? DEFAULT_CURRENCY)
+  const [dateFormat, setDateFormat] = useState(profile?.preferred_date_format ?? DEFAULT_DATE_FORMAT)
   const [saving, setSaving]         = useState(false)
   const [error,  setError]          = useState('')
 
-  const origCurrency   = profile?.preferred_currency   ?? 'USD'
-  const origDateFormat = profile?.preferred_date_format ?? 'DD/MM/YYYY'
+  const origCurrency   = profile?.preferred_currency   ?? DEFAULT_CURRENCY
+  const origDateFormat = profile?.preferred_date_format ?? DEFAULT_DATE_FORMAT
   const isDirty        = currency !== origCurrency || dateFormat !== origDateFormat
 
   async function handleSave(e) {
@@ -320,10 +320,28 @@ function DangerZone({ onSignOut }) {
   )
 }
 
+// ── Page skeleton ──────────────────────────────────────────────────────────────
+
+function SettingsSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 animate-pulse">
+      {[130, 200, 110, 80].map((h, i) => (
+        <div key={i} className="card">
+          <div className="h-3.5 w-24 bg-white/[0.06] rounded-full mb-3" />
+          <div className="h-2.5 w-44 bg-white/[0.04] rounded-full mb-5" />
+          <div className="h-10 bg-white/[0.03] rounded-xl mb-3" />
+          {i < 2 && <div className="h-10 bg-white/[0.03] rounded-xl mb-3" />}
+          <div className="h-8 w-28 bg-white/[0.04] rounded-xl mt-1" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
-  const { user, profile, updateProfile, updatePassword, reauthenticate, signOut } = useAuth()
+  const { user, profile, profileLoading, updateProfile, updatePassword, reauthenticate, signOut } = useAuth()
   const { toast } = useToast()
   const navigate  = useNavigate()
 
@@ -364,29 +382,33 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Sections */}
-        <motion.div
-          variants={STAGGER_CONTAINER}
-          initial="initial"
-          animate="animate"
-          className="flex flex-col gap-4"
-        >
-          <ProfileSection
-            profile={profile}
-            user={user}
-            onSave={handleProfileSave}
-          />
-          <SecuritySection
-            onChangePassword={handleChangePassword}
-          />
-          <PreferencesSection
-            profile={profile}
-            onSave={handlePreferencesSave}
-          />
-          <DangerZone
-            onSignOut={handleSignOut}
-          />
-        </motion.div>
+        {/* Sections — skeleton while profile is first fetching */}
+        {profileLoading ? (
+          <SettingsSkeleton />
+        ) : (
+          <motion.div
+            variants={STAGGER_CONTAINER}
+            initial="initial"
+            animate="animate"
+            className="flex flex-col gap-4"
+          >
+            <ProfileSection
+              profile={profile}
+              user={user}
+              onSave={handleProfileSave}
+            />
+            <SecuritySection
+              onChangePassword={handleChangePassword}
+            />
+            <PreferencesSection
+              profile={profile}
+              onSave={handlePreferencesSave}
+            />
+            <DangerZone
+              onSignOut={handleSignOut}
+            />
+          </motion.div>
+        )}
       </PageWrapper>
     </AppShell>
   )

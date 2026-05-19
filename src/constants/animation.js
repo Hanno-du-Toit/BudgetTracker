@@ -10,10 +10,11 @@ export const EASING = {
   spring: { type: 'spring', stiffness: 300, damping: 30 },
 }
 
+// Enter: slide up + fade. Exit: fade only (no movement prevents jarring on scroll).
 export const PAGE_TRANSITION = {
-  initial:   { opacity: 0, y: 12 },
-  animate:   { opacity: 1, y: 0 },
-  exit:      { opacity: 0, y: -8 },
+  initial:    { opacity: 0, y: 8 },
+  animate:    { opacity: 1, y: 0 },
+  exit:       { opacity: 0 },
   transition: { duration: DURATION.normal, ease: EASING.out },
 }
 

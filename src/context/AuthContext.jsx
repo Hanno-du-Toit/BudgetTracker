@@ -5,17 +5,20 @@ import { mapErrorToFriendly } from '@/utils/errorMessages'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user,           setUser]           = useState(null)
+  const [profile,        setProfile]        = useState(null)
+  const [loading,        setLoading]        = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
 
   const fetchProfile = useCallback(async (userId) => {
+    setProfileLoading(true)
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single()
     if (data) setProfile(data)
+    setProfileLoading(false)
   }, [])
 
   useEffect(() => {
@@ -110,6 +113,7 @@ export function AuthProvider({ children }) {
       user,
       profile,
       loading,
+      profileLoading,
       signIn,
       signUp,
       signOut,

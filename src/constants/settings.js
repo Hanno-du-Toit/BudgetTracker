@@ -1,3 +1,6 @@
+export const DEFAULT_CURRENCY    = 'ZAR'
+export const DEFAULT_DATE_FORMAT = 'DD/MM/YYYY'
+
 export const AVATAR_COLORS = [
   { label: 'Violet',  value: '#7c5cfc' },
   { label: 'Indigo',  value: '#6366f1' },
@@ -12,10 +15,10 @@ export const AVATAR_COLORS = [
 ]
 
 export const CURRENCY_OPTIONS = [
+  { value: 'ZAR', label: 'ZAR — South African Rand (R)' },
   { value: 'USD', label: 'USD — US Dollar ($)' },
   { value: 'EUR', label: 'EUR — Euro (€)' },
   { value: 'GBP', label: 'GBP — British Pound (£)' },
-  { value: 'ZAR', label: 'ZAR — South African Rand (R)' },
   { value: 'AUD', label: 'AUD — Australian Dollar (A$)' },
   { value: 'CAD', label: 'CAD — Canadian Dollar (C$)' },
   { value: 'NZD', label: 'NZD — New Zealand Dollar (NZ$)' },

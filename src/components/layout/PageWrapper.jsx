@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion'
-import { PAGE_TRANSITION } from '@/constants/animation'
+import { DURATION, EASING } from '@/constants/animation'
 
 export default function PageWrapper({ children, className = '' }) {
   return (
     <motion.div
       className={`w-full ${className}`}
-      initial={PAGE_TRANSITION.initial}
-      animate={PAGE_TRANSITION.animate}
-      exit={PAGE_TRANSITION.exit}
-      transition={PAGE_TRANSITION.transition}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0, transition: { duration: DURATION.normal, ease: EASING.out } }}
+      exit={{ opacity: 0, transition: { duration: DURATION.fast } }}
     >
       {children}
     </motion.div>
