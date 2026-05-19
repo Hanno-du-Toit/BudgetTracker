@@ -337,6 +337,8 @@ function MyAccountsSection() {
     setError('')
     setSaving(true)
     const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { setSaving(false); setError('Not signed in — please refresh and try again.'); return }
+    console.log('session user id:', session?.user?.id)
     const { data, error: err } = await supabase
       .from('user_accounts')
       .insert({ user_id: session.user.id, account_number: rawNum, account_name: trimName })
