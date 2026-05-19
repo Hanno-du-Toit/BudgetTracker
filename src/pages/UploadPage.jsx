@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useFileParser } from '@/hooks/useFileParser'
+import { useTransactions } from '@/hooks/useTransactions'
 import { useToast } from '@/context/ToastContext'
 import { ROUTES } from '@/constants/routes'
 import AppShell from '@/components/layout/AppShell'
@@ -15,9 +16,10 @@ import Button from '@/components/ui/Button'
 export default function UploadPage() {
   const {
     status, progress, parseStep, isAiStep,
-    transactions, error, fileName,
+    transactions, error, fileName, manuallyChangedIds,
     parseFile, reset, updateTransactionCategory,
   } = useFileParser()
+  const { upsertMany } = useTransactions()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -40,12 +42,23 @@ export default function UploadPage() {
 
   async function handleConfirm() {
     setIsConfirming(true)
-    // Saving to Supabase is wired in Phase 6.
-    // For now, store in sessionStorage so the dashboard can preview them.
     try {
-      sessionStorage.setItem('pendingTransactions', JSON.stringify(transactions))
-      toast.success(`${transactions.length} transactions ready — saving coming in the next phase!`)
-      navigate(ROUTES.DASHBOARD)
+      await upsertMany(transactions, fileName, manuallyChangedIds)
+      toast.success(`${transactions.length} transactions saved successfully!`)
+      navigate(ROUTES.TRANSACTIONS)
+    } catch (err) {
+      console.error('[UploadPage] handleConfirm error:', err)
+      const msg = err?.message ?? ''
+      const lower = msg.toLowerCase()
+      if (lower.includes('network') || lower.includes('fetch')) {
+        toast.error('Connection error. Please check your internet and try again.')
+      } else if (lower.includes('does not exist') || lower.includes('relation')) {
+        toast.error('Database tables not found — please run the Phase 5 SQL in Supabase first.')
+      } else if (lower.includes('row-level security') || lower.includes('policy')) {
+        toast.error('Permission denied — check that RLS policies are applied in Supabase.')
+      } else {
+        toast.error(msg || 'Failed to save transactions. Please try again.')
+      }
     } finally {
       setIsConfirming(false)
     }

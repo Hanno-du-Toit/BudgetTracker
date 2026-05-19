@@ -30,13 +30,14 @@ function detectFileType(file) {
 }
 
 export function useFileParser() {
-  const [status,       setStatus]       = useState('idle')   // idle | parsing | review | error
-  const [progress,     setProgress]     = useState(0)
-  const [parseStep,    setParseStep]    = useState('')
-  const [isAiStep,     setIsAiStep]     = useState(false)
-  const [transactions, setTransactions] = useState([])
-  const [error,        setError]        = useState(null)
-  const [fileName,     setFileName]     = useState('')
+  const [status,             setStatus]             = useState('idle')   // idle | parsing | review | error
+  const [progress,           setProgress]           = useState(0)
+  const [parseStep,          setParseStep]          = useState('')
+  const [isAiStep,           setIsAiStep]           = useState(false)
+  const [transactions,       setTransactions]       = useState([])
+  const [error,              setError]              = useState(null)
+  const [fileName,           setFileName]           = useState('')
+  const [manuallyChangedIds, setManuallyChangedIds] = useState(() => new Set())
 
   const parseFile = useCallback(async (file) => {
     setStatus('parsing')
@@ -101,11 +102,12 @@ export function useFileParser() {
     }
   }, [])
 
-  // Allows inline edits in TransactionReview before saving
+  // Allows inline edits in TransactionReview before saving; tracks which were manually changed
   const updateTransactionCategory = useCallback((id, category) => {
     setTransactions((prev) =>
       prev.map((t) => (t.id === id ? { ...t, category } : t))
     )
+    setManuallyChangedIds((prev) => new Set([...prev, id]))
   }, [])
 
   const reset = useCallback(() => {
@@ -116,11 +118,12 @@ export function useFileParser() {
     setTransactions([])
     setError(null)
     setFileName('')
+    setManuallyChangedIds(new Set())
   }, [])
 
   return {
     status, progress, parseStep, isAiStep,
-    transactions, error, fileName,
+    transactions, error, fileName, manuallyChangedIds,
     parseFile, reset, updateTransactionCategory,
   }
 }
