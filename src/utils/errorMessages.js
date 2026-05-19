@@ -10,6 +10,10 @@ const AUTH_ERROR_MAP = {
   'New password should be different from the old password': 'Your new password must be different from your current one.',
   'Auth session missing':                           'Your session has expired. Please sign in again.',
   'signup_disabled':                                'New sign-ups are currently disabled.',
+  // Supabase DB errors
+  'does not exist':                                 'A required database column is missing. Please run the latest SQL migration.',
+  'violates row-level security':                    'Permission denied. Check your Supabase RLS policies.',
+  'PGRST116':                                       'Profile record not found. Please try saving again.',
 }
 
 export function mapErrorToFriendly(error) {

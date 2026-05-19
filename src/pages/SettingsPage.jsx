@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
@@ -92,13 +92,22 @@ function SelectField({ label, value, onChange, options }) {
 // ── Profile section ────────────────────────────────────────────────────────────
 
 function ProfileSection({ profile, user, onSave }) {
-  const name      = profile?.display_name ?? user?.email ?? ''
-  const initials  = (profile?.display_name ?? user?.email ?? '?').charAt(0).toUpperCase()
+  // Show name from profile if available, otherwise empty so the user types it in.
+  // Never fall back to the email address inside the input field.
+  const savedName  = profile?.display_name ?? ''
+  const savedColor = profile?.avatar_color  ?? AVATAR_COLORS[0].value
+  const initial    = (profile?.display_name || user?.email || '?').charAt(0).toUpperCase()
 
-  const [displayName, setDisplayName] = useState(name)
-  const [avatarColor, setAvatarColor] = useState(profile?.avatar_color ?? AVATAR_COLORS[0].value)
+  const [displayName, setDisplayName] = useState(savedName)
+  const [avatarColor, setAvatarColor] = useState(savedColor)
   const [saving, setSaving]           = useState(false)
   const [error, setError]             = useState('')
+
+  // Sync form fields when profile data arrives after the skeleton clears.
+  useEffect(() => {
+    setDisplayName(profile?.display_name ?? '')
+    setAvatarColor(profile?.avatar_color  ?? AVATAR_COLORS[0].value)
+  }, [profile])
 
   async function handleSave(e) {
     e.preventDefault()
@@ -112,7 +121,7 @@ function ProfileSection({ profile, user, onSave }) {
     if (result?.error) setError(result.error)
   }
 
-  const isDirty = displayName.trim() !== name || avatarColor !== (profile?.avatar_color ?? AVATAR_COLORS[0].value)
+  const isDirty = displayName.trim() !== savedName || avatarColor !== savedColor
 
   return (
     <SettingsSection
@@ -122,7 +131,7 @@ function ProfileSection({ profile, user, onSave }) {
       <form onSubmit={handleSave} className="flex flex-col gap-5">
         {/* Avatar preview + color picker */}
         <div className="flex items-start gap-4">
-          <AvatarPreview color={avatarColor} initial={initials} />
+          <AvatarPreview color={avatarColor} initial={initial} />
           <div className="flex flex-col gap-2">
             <span className="text-xs text-white/40">Avatar colour</span>
             <div className="flex flex-wrap gap-2">

@@ -8,24 +8,30 @@ export function AuthProvider({ children }) {
   const [user,           setUser]           = useState(null)
   const [profile,        setProfile]        = useState(null)
   const [loading,        setLoading]        = useState(true)
-  const [profileLoading, setProfileLoading] = useState(false)
+  // Start true so protected pages always show a skeleton until the first fetch completes.
+  const [profileLoading, setProfileLoading] = useState(true)
 
   const fetchProfile = useCallback(async (userId) => {
     setProfileLoading(true)
+    // maybeSingle() returns null data (not an error) when no row exists.
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single()
+      .maybeSingle()
     if (data) setProfile(data)
     setProfileLoading(false)
   }, [])
 
   useEffect(() => {
-    // Resolve the initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
+      if (session?.user) {
+        fetchProfile(session.user.id)
+      } else {
+        // No session — nothing to fetch, release the skeleton immediately.
+        setProfileLoading(false)
+      }
       setLoading(false)
     })
 
@@ -36,6 +42,7 @@ export function AuthProvider({ children }) {
           fetchProfile(session.user.id)
         } else {
           setProfile(null)
+          setProfileLoading(false)
         }
       }
     )
@@ -87,14 +94,18 @@ export function AuthProvider({ children }) {
 
   async function updateProfile(updates) {
     if (!user) return { error: 'Not authenticated.' }
+    // upsert handles the case where the profile row doesn't exist yet.
     const { data, error } = await supabase
       .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
+      .upsert({ id: user.id, ...updates }, { onConflict: 'id' })
       .select()
-      .single()
-    if (error) return { error: mapErrorToFriendly(error) }
-    setProfile(data)
+      .maybeSingle()
+    if (error) {
+      console.error('[updateProfile]', error)
+      return { error: mapErrorToFriendly(error) }
+    }
+    // Merge returned fields into local state so unrelated columns aren't lost.
+    if (data) setProfile((prev) => ({ ...prev, ...data }))
     return {}
   }
 
