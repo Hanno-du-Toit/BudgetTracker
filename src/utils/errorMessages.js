@@ -15,6 +15,12 @@ const AUTH_ERROR_MAP = {
   'violates row-level security': 'Permission denied. Check your Supabase RLS policies for this table.',
   'permission denied':           'Permission denied. Run the SQL migration to grant table access to the authenticated role.',
   'PGRST116':                    'Record not found. Please try saving again.',
+  // Password reset specific
+  'redirect_url not allowed':    'Invalid redirect URL. Add your site URL to Supabase → Authentication → URL Configuration → Redirect URLs.',
+  'Redirect URL not allowed':    'Invalid redirect URL. Add your site URL to Supabase → Authentication → URL Configuration → Redirect URLs.',
+  'redirect_url_mismatch':       'Redirect URL mismatch. Add your site URL to Supabase → Authentication → URL Configuration → Redirect URLs.',
+  'For security purposes':       'Please wait 60 seconds before requesting another reset link.',
+  'User not found':              'No account found with that email address.',
 }
 
 // PostgreSQL error codes that carry more reliable signal than message text.

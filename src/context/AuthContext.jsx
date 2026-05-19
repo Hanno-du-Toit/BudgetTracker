@@ -80,9 +80,14 @@ export function AuthProvider({ children }) {
 
   async function sendPasswordReset(email) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // window.location.origin resolves to the current host automatically
+      // (localhost in dev, the Vercel URL in production).
       redirectTo: `${window.location.origin}/reset-password`,
     })
-    if (error) return { error: mapErrorToFriendly(error) }
+    if (error) {
+      console.error('[sendPasswordReset]', error)
+      return { error: mapErrorToFriendly(error) }
+    }
     return {}
   }
 
