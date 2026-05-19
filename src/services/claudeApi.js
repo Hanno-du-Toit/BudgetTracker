@@ -37,7 +37,7 @@ export function detectInternalTransfer(description, userAccountNumbers = []) {
   const lower = description.toLowerCase()
   const isTransfer = lower.includes('digital transf') || lower.includes('digital payment dt') || lower.includes('digital payment cr')
   if (!isTransfer) return false
-  return userAccountNumbers.some((acc) => lower.includes(acc.toLowerCase()))
+  return userAccountNumbers.some((acc) => lower.includes(acc.replace(/\s+/g, '').toLowerCase()))
 }
 
 // ─── Override matching ────────────────────────────────────────────────────────

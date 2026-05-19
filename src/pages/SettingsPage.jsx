@@ -331,15 +331,15 @@ function MyAccountsSection() {
   async function handleAdd(e) {
     e.preventDefault()
     const trimName = nickname.trim()
-    const trimNum  = accNumber.trim()
+    const rawNum   = accNumber.replace(/\s/g, '')
     if (!trimName) { setError('Enter an account nickname.'); return }
-    if (!trimNum)  { setError('Enter an account number.'); return }
+    if (!rawNum)   { setError('Enter an account number.'); return }
     setError('')
     setSaving(true)
     const { data: { session } } = await supabase.auth.getSession()
     const { data, error: err } = await supabase
       .from('user_accounts')
-      .insert({ user_id: session.user.id, account_number: trimNum, account_name: trimName })
+      .insert({ user_id: session.user.id, account_number: rawNum, account_name: trimName })
       .select('id, account_number, account_name')
       .single()
     setSaving(false)
@@ -401,9 +401,13 @@ function MyAccountsSection() {
         <Input
           label="Account number"
           value={accNumber}
-          onChange={(e) => setAccNumber(e.target.value)}
-          placeholder="e.g. 92-1812-7811"
-          maxLength={40}
+          onChange={(e) => {
+            const digits    = e.target.value.replace(/\D/g, '')
+            const formatted = digits.match(/.{1,4}/g)?.join(' ') ?? ''
+            setAccNumber(formatted)
+          }}
+          placeholder="e.g. 9218 1278 11"
+          maxLength={24}
         />
         {error && (
           <p className="text-xs text-red-400 flex items-center gap-1">
