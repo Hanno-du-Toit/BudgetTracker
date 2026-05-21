@@ -21,6 +21,50 @@ function SkeletonBlock({ className = '' }) {
   return <div className={`card animate-pulse ${className}`} />
 }
 
+function ChartCarousel({ pieData, weekData, byMonth }) {
+  const [active, setActive] = useState(0)
+
+  return (
+    <div className="sm:hidden mb-6">
+      <div className="overflow-hidden">
+        <motion.div
+          className="flex"
+          style={{ width: '200%' }}
+          animate={{ x: active === 0 ? '0%' : '-50%' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.15}
+          onDragEnd={(_, { offset }) => {
+            if (offset.x < -50 && active === 0) setActive(1)
+            else if (offset.x > 50 && active === 1) setActive(0)
+          }}
+        >
+          <div style={{ width: '50%' }}>
+            <SpendingPieChart data={pieData} />
+          </div>
+          <div style={{ width: '50%' }}>
+            <WeeklyBarChart weekData={weekData} monthData={byMonth} />
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="flex justify-center gap-2 mt-3">
+        {[0, 1].map((i) => (
+          <motion.button
+            key={i}
+            onClick={() => setActive(i)}
+            animate={{ scale: i === active ? 1.3 : 1, opacity: i === active ? 1 : 0.35 }}
+            transition={{ duration: 0.2 }}
+            className={`w-2 h-2 rounded-full ${i === active ? 'bg-brand-light' : 'border border-white/50'}`}
+            aria-label={i === 0 ? 'Spending by category' : 'Spending by week'}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate()
   const [month, setMonth] = useState(CURRENT_MONTH)
@@ -133,8 +177,15 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            {/* Charts — mobile swipeable carousel */}
+            <ChartCarousel
+              pieData={stats.byCategory}
+              weekData={stats.byWeek}
+              byMonth={byMonth}
+            />
+
+            {/* Charts — desktop grid */}
+            <div className="hidden sm:grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               <SpendingPieChart data={stats.byCategory} />
               <WeeklyBarChart weekData={stats.byWeek} monthData={byMonth} />
             </div>
