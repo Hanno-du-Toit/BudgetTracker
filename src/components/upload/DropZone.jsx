@@ -78,8 +78,8 @@ export default function DropZone({ onFileAccepted, disabled = false }) {
           {isDragOver
             ? <FolderOpen className="h-8 w-8" />
             : (
-              <div className="bg-purple-500/20 rounded-2xl p-4 shadow-[0_0_20px_rgba(139,92,246,0.3)]">
-                <FileUp className="text-purple-400 w-10 h-10" />
+              <div className="bg-white/10 rounded-2xl p-4 shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                <FileUp className="text-white/70 w-10 h-10" />
               </div>
             )
           }

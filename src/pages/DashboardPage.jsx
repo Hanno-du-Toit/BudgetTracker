@@ -6,6 +6,7 @@ import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { formatCurrency } from '@/utils/formatters'
 import { ROUTES } from '@/constants/routes'
 import { FADE_IN } from '@/constants/animation'
+import { SpotlightCard } from '@/components/ui/SpotlightCard'
 import AppShell from '@/components/layout/AppShell'
 import PageWrapper from '@/components/layout/PageWrapper'
 import EmptyState from '@/components/ui/EmptyState'
@@ -193,25 +194,31 @@ export default function DashboardPage() {
           <>
             {/* KPI cards */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 mb-6">
-              <StatCard
-                label="Total spend"
-                value={formatCurrency(stats.totalSpend)}
-                color="text-red-400"
-                icon="💸"
-              />
-              <StatCard
-                label="Total income"
-                value={formatCurrency(stats.totalIncome)}
-                color="text-green-400"
-                icon="💰"
-              />
-              <div className="col-span-2 sm:col-span-1">
+              <SpotlightCard glowColor="purple" customSize={true} className="w-full rounded-2xl">
                 <StatCard
-                  label="Net flow"
-                  value={formatCurrency(stats.netFlow)}
-                  color={stats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'}
-                  icon={stats.netFlow >= 0 ? '📈' : '📉'}
+                  label="Total spend"
+                  value={formatCurrency(stats.totalSpend)}
+                  color="text-red-400"
+                  icon="💸"
                 />
+              </SpotlightCard>
+              <SpotlightCard glowColor="purple" customSize={true} className="w-full rounded-2xl">
+                <StatCard
+                  label="Total income"
+                  value={formatCurrency(stats.totalIncome)}
+                  color="text-green-400"
+                  icon="💰"
+                />
+              </SpotlightCard>
+              <div className="col-span-2 sm:col-span-1">
+                <SpotlightCard glowColor="purple" customSize={true} className="w-full rounded-2xl">
+                  <StatCard
+                    label="Net flow"
+                    value={formatCurrency(stats.netFlow)}
+                    color={stats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'}
+                    icon={stats.netFlow >= 0 ? '📈' : '📉'}
+                  />
+                </SpotlightCard>
               </div>
             </div>
 
@@ -224,14 +231,22 @@ export default function DashboardPage() {
 
             {/* Charts — desktop grid */}
             <div className="hidden sm:grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-              <SpendingPieChart data={stats.byCategory} />
-              <WeeklyBarChart weekData={stats.byWeek} monthData={byMonth} />
+              <SpotlightCard glowColor="purple" customSize={true} className="w-full rounded-2xl">
+                <SpendingPieChart data={stats.byCategory} />
+              </SpotlightCard>
+              <SpotlightCard glowColor="purple" customSize={true} className="w-full rounded-2xl">
+                <WeeklyBarChart weekData={stats.byWeek} monthData={byMonth} />
+              </SpotlightCard>
             </div>
 
             {/* Bottom row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <CategoryBreakdown  categories={stats.topCategories} />
-              <RecentTransactions transactions={stats.recentTransactions} />
+              <SpotlightCard glowColor="purple" customSize={true} className="w-full rounded-2xl">
+                <CategoryBreakdown categories={stats.topCategories} />
+              </SpotlightCard>
+              <SpotlightCard glowColor="purple" customSize={true} className="w-full rounded-2xl">
+                <RecentTransactions transactions={stats.recentTransactions} />
+              </SpotlightCard>
             </div>
           </>
         )}
