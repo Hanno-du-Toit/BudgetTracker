@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useDashboardStats } from '@/hooks/useDashboardStats'
@@ -23,31 +23,31 @@ function SkeletonBlock({ className = '' }) {
 
 function ChartCarousel({ pieData, weekData, byMonth }) {
   const [active, setActive] = useState(0)
+  const containerRef = useRef(null)
+
+  const slideOffset = (containerRef.current?.offsetWidth ?? 0) + 16
 
   return (
-    <div className="sm:hidden mb-6">
-      <div className="overflow-hidden">
-        <motion.div
-          className="flex items-stretch"
-          style={{ width: '200%' }}
-          animate={{ x: active === 0 ? '0%' : '-50%' }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.15}
-          onDragEnd={(_, { offset }) => {
-            if (offset.x < -50 && active === 0) setActive(1)
-            else if (offset.x > 50 && active === 1) setActive(0)
-          }}
-        >
-          <div style={{ width: '50%' }} className="h-full min-h-[420px]">
-            <SpendingPieChart data={pieData} />
-          </div>
-          <div style={{ width: '50%' }} className="h-full min-h-[420px]">
-            <WeeklyBarChart weekData={weekData} monthData={byMonth} />
-          </div>
-        </motion.div>
-      </div>
+    <div ref={containerRef} className="sm:hidden mb-6 overflow-hidden w-full">
+      <motion.div
+        className="flex gap-4"
+        animate={{ x: active === 0 ? 0 : -slideOffset }}
+        transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.05}
+        onDragEnd={(_, { offset }) => {
+          if (offset.x < -50 && active === 0) setActive(1)
+          else if (offset.x > 50 && active === 1) setActive(0)
+        }}
+      >
+        <div style={{ width: '100%', height: '420px', minHeight: '420px', overflow: 'hidden', flexShrink: 0 }}>
+          <SpendingPieChart data={pieData} />
+        </div>
+        <div style={{ width: '100%', height: '420px', minHeight: '420px', overflow: 'hidden', flexShrink: 0 }}>
+          <WeeklyBarChart weekData={weekData} monthData={byMonth} />
+        </div>
+      </motion.div>
 
       <div className="flex justify-center gap-2 mt-3">
         {[0, 1].map((i) => (
