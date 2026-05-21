@@ -15,6 +15,20 @@ All development must follow **STANDARDS.md** in the project root. Key points:
 - No hardcoded values; use `src/constants/` or config files.
 - Use Tailwind responsive prefixes (`sm:`, `md:`) for layout changes — never break desktop when fixing mobile.
 
+## Always Do First
+- **Invoke the `frontend-design` skill** before writing any frontend code, every session, no exceptions.
+
+## Anti-Generic UI Guardrails
+- **Colors:** Never use default Tailwind palette (indigo-500, blue-600). Use the existing brand purple and derive from it.
+- **Shadows:** Never use flat `shadow-md`. Use layered, color-tinted shadows with low opacity.
+- **Typography:** Apply tight tracking (`-0.03em`) on large headings, generous line-height (`1.7`) on body text.
+- **Gradients:** Layer multiple radial gradients. Add subtle grain/texture for depth.
+- **Animations:** Only animate `transform` and `opacity`. Never use `transition-all`. Use spring-style easing.
+- **Interactive states:** Every clickable element needs hover, focus-visible, and active states. No exceptions.
+- **Spacing:** Use intentional consistent spacing — not random Tailwind steps.
+- **Depth:** Surfaces must have a layering system (base → elevated → floating), not all at the same z-plane.
+- **Never** use default Tailwind blue/indigo as primary color.
+
 ## How to Operate
 
 1. **Check existing components first** — before building anything new, check `src/components/` and `src/hooks/` to see if something already exists. Reuse and extend rather than duplicate.
