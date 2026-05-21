@@ -90,10 +90,10 @@ export default function DashboardPage() {
         {/* Dashboard — loading skeletons */}
         {loading && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 mb-6">
               <SkeletonBlock className="h-20" />
               <SkeletonBlock className="h-20" />
-              <SkeletonBlock className="h-20" />
+              <SkeletonBlock className="h-20 col-span-2 sm:col-span-1" />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
               <SkeletonBlock className="h-72" />
@@ -110,7 +110,7 @@ export default function DashboardPage() {
         {!loading && stats && (
           <>
             {/* KPI cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 mb-6">
               <StatCard
                 label="Total spend"
                 value={formatCurrency(stats.totalSpend)}
@@ -123,12 +123,14 @@ export default function DashboardPage() {
                 color="text-green-400"
                 icon="💰"
               />
-              <StatCard
-                label="Net flow"
-                value={formatCurrency(stats.netFlow)}
-                color={stats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'}
-                icon={stats.netFlow >= 0 ? '📈' : '📉'}
-              />
+              <div className="col-span-2 sm:col-span-1">
+                <StatCard
+                  label="Net flow"
+                  value={formatCurrency(stats.netFlow)}
+                  color={stats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'}
+                  icon={stats.netFlow >= 0 ? '📈' : '📉'}
+                />
+              </div>
             </div>
 
             {/* Charts */}
