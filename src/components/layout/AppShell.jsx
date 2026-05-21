@@ -259,10 +259,12 @@ export default function AppShell({ children }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Subtle animated gradient backdrop */}
-      <div className="opacity-30 pointer-events-none">
+      <div className="opacity-20 pointer-events-none">
         <BackgroundGradientAnimation
           interactive={false}
-          size="40%"
+          size="25%"
+          gradientBackgroundStart="rgb(8, 5, 20)"
+          gradientBackgroundEnd="rgb(5, 3, 15)"
           containerClassName="z-0"
         />
       </div>

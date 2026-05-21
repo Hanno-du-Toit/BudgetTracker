@@ -27,7 +27,7 @@ export default function FloatingActionMenu() {
   ]
 
   return (
-    <div className="fixed bottom-24 right-6 z-50 md:bottom-8 md:right-8">
+    <div className="hidden md:block fixed bottom-8 right-8 z-50">
       <AnimatePresence>
         {isOpen && (
           <motion.div
