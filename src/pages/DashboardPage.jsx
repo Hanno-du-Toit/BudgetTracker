@@ -31,10 +31,10 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <PageWrapper className="max-w-6xl mx-auto px-4 py-8">
+      <PageWrapper className="max-w-6xl mx-auto px-4 pt-4 pb-8 sm:py-8">
 
         {/* Header row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-8">
           <MonthSelector month={month} onChange={setMonth} />
           <button
             onClick={() => navigate(ROUTES.UPLOAD)}

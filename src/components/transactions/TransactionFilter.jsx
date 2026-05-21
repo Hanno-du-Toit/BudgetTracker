@@ -15,7 +15,7 @@ export default function TransactionFilter({
   return (
     <div className="flex flex-col sm:flex-row gap-3">
       {/* Search */}
-      <div className="relative flex-1">
+      <div className="relative sm:flex-1">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm select-none">
           🔍
         </span>
@@ -24,35 +24,38 @@ export default function TransactionFilter({
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search transactions…"
-          className="input-base pl-8"
+          className="input-base pl-8 py-2.5 sm:py-3"
         />
       </div>
 
-      {/* Category */}
-      <select
-        value={category}
-        onChange={(e) => onCategory(e.target.value)}
-        className={selectClass}
-        aria-label="Filter by category"
-      >
-        <option value="">All categories</option>
-        {CATEGORIES.map((c) => (
-          <option key={c.slug} value={c.slug}>{c.icon} {c.label}</option>
-        ))}
-      </select>
+      {/* Category + Month: 2-col grid on mobile, transparent on desktop */}
+      <div className="grid grid-cols-2 sm:contents gap-3">
+        {/* Category */}
+        <select
+          value={category}
+          onChange={(e) => onCategory(e.target.value)}
+          className={selectClass}
+          aria-label="Filter by category"
+        >
+          <option value="">All categories</option>
+          {CATEGORIES.map((c) => (
+            <option key={c.slug} value={c.slug}>{c.icon} {c.label}</option>
+          ))}
+        </select>
 
-      {/* Month */}
-      <select
-        value={month}
-        onChange={(e) => onMonth(e.target.value)}
-        className={selectClass}
-        aria-label="Filter by month"
-      >
-        <option value="">All months</option>
-        {availableMonths.map((m) => (
-          <option key={m} value={m}>{m}</option>
-        ))}
-      </select>
+        {/* Month */}
+        <select
+          value={month}
+          onChange={(e) => onMonth(e.target.value)}
+          className={selectClass}
+          aria-label="Filter by month"
+        >
+          <option value="">All months</option>
+          {availableMonths.map((m) => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
+      </div>
 
       {/* Sort */}
       <select

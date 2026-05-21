@@ -12,18 +12,23 @@ function AmountCell({ amount }) {
 
 export default function TransactionRow({ txn, onEditCategory, onDelete }) {
   return (
-    <div className="grid grid-cols-[72px_1fr_auto_auto] sm:grid-cols-[80px_1fr_130px_110px_36px] gap-2 px-4 py-3 items-center hover:bg-white/[0.02] transition-colors group">
+    <div className="grid grid-cols-[72px_1fr_auto_auto] sm:grid-cols-[80px_1fr_130px_110px_36px] gap-2 px-4 py-3 items-start sm:items-center hover:bg-white/[0.02] transition-colors group">
       {/* Date */}
       <span className="text-xs text-white/40 tabular-nums">
         {formatDate(txn.transaction_date)}
       </span>
 
-      {/* Description */}
-      <span className="text-sm text-white truncate" title={txn.description}>
-        {txn.description}
-      </span>
+      {/* Description + mobile category badge */}
+      <div className="min-w-0">
+        <span className="text-sm text-white truncate block" title={txn.description}>
+          {txn.description}
+        </span>
+        <span className="sm:hidden block mt-0.5">
+          <CategoryBadge category={txn.category} onClick={() => onEditCategory(txn)} />
+        </span>
+      </div>
 
-      {/* Category — hidden on smallest screens */}
+      {/* Category — desktop only */}
       <span className="hidden sm:flex items-center">
         <CategoryBadge category={txn.category} onClick={() => onEditCategory(txn)} />
       </span>

@@ -224,10 +224,10 @@ export default function TransactionsPage() {
 
   return (
     <AppShell>
-      <PageWrapper className="max-w-4xl mx-auto px-4 py-8">
+      <PageWrapper className="max-w-4xl mx-auto px-4 pt-4 pb-8 sm:py-8">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div>
             <h1 className="text-2xl font-bold">Transactions</h1>
             {!loading && (
