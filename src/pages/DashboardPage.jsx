@@ -33,29 +33,32 @@ function ChartCarousel({ pieData, weekData, byMonth }) {
   const slideOffset = containerWidth + 16
 
   return (
-    <div ref={containerRef} className="sm:hidden mb-6 overflow-hidden w-full">
-      <motion.div
-        className="flex gap-4"
-        animate={{ x: active === 0 ? 0 : -slideOffset }}
-        transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
-        drag="x"
-        dragConstraints={{ left: -slideOffset, right: 0 }}
-        dragElastic={0.05}
-        dragMomentum={false}
-        onDragEnd={(_, { offset }) => {
-          if (offset.x < -50 && active === 0) setActive(1)
-          else if (offset.x > 50 && active === 1) setActive(0)
-        }}
-      >
-        <div style={{ width: '100%', height: '420px', minHeight: '420px', overflow: 'hidden', flexShrink: 0 }}>
-          <SpendingPieChart data={pieData} />
-        </div>
-        <div style={{ width: '100%', height: '420px', minHeight: '420px', overflow: 'hidden', flexShrink: 0 }}>
-          <WeeklyBarChart weekData={weekData} monthData={byMonth} />
-        </div>
-      </motion.div>
+    <div ref={containerRef} className="sm:hidden mb-6 w-full">
+      {/* overflow-hidden only wraps the sliding track so dots are never clipped */}
+      <div className="overflow-hidden">
+        <motion.div
+          className="flex gap-4"
+          animate={{ x: active === 0 ? 0 : -slideOffset }}
+          transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
+          drag="x"
+          dragConstraints={{ left: -slideOffset, right: 0 }}
+          dragElastic={0.05}
+          dragMomentum={false}
+          onDragEnd={(_, { offset }) => {
+            if (offset.x < -50 && active === 0) setActive(1)
+            else if (offset.x > 50 && active === 1) setActive(0)
+          }}
+        >
+          <div style={{ width: '100%', height: '420px', minHeight: '420px', overflow: 'hidden', flexShrink: 0 }}>
+            <SpendingPieChart data={pieData} />
+          </div>
+          <div style={{ width: '100%', height: '420px', minHeight: '420px', overflow: 'hidden', flexShrink: 0 }}>
+            <WeeklyBarChart weekData={weekData} monthData={byMonth} />
+          </div>
+        </motion.div>
+      </div>
 
-      <div className="flex justify-center gap-2 mt-3">
+      <div className="flex justify-center gap-2 pt-3 pb-2">
         {[0, 1].map((i) => (
           <motion.button
             key={i}

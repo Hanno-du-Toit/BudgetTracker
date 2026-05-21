@@ -30,7 +30,7 @@ export default function WeeklyBarChart({ weekData, monthData }) {
   const max = data.length ? Math.max(...data.map((d) => d.spend), 1) : 1
 
   return (
-    <div className="card h-full">
+    <div className="card h-full flex flex-col">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-semibold text-white/70">
           {view === 'weekly' ? 'Spending by week' : 'Spending by month'}
@@ -60,37 +60,39 @@ export default function WeeklyBarChart({ weekData, monthData }) {
       </div>
 
       {data.length === 0 ? (
-        <div className="flex items-center justify-center h-[220px] text-white/30 text-sm">
+        <div className="flex-1 flex items-center justify-center text-white/30 text-sm">
           No data available
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={data} barSize={view === 'monthly' ? 20 : 36} margin={{ top: 12, right: 4, bottom: 0, left: -8 }}>
-            <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
-            <XAxis
-              dataKey={dataKey}
-              tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 12 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tickFormatter={yTick}
-              tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              width={44}
-            />
-            <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-            <Bar dataKey="spend" radius={[6, 6, 0, 0]}>
-              {data.map((entry) => (
-                <Cell
-                  key={entry[dataKey]}
-                  fill={entry.spend === max ? '#7c5cfc' : 'rgba(124,92,252,0.3)'}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="flex-1 min-h-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} barSize={view === 'monthly' ? 20 : 36} margin={{ top: 12, right: 4, bottom: 0, left: -8 }}>
+              <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
+              <XAxis
+                dataKey={dataKey}
+                tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tickFormatter={yTick}
+                tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={44}
+              />
+              <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+              <Bar dataKey="spend" radius={[6, 6, 0, 0]}>
+                {data.map((entry) => (
+                  <Cell
+                    key={entry[dataKey]}
+                    fill={entry.spend === max ? '#7c5cfc' : 'rgba(124,92,252,0.3)'}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   )
