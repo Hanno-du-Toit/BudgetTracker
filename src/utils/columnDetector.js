@@ -51,6 +51,23 @@ function findField(headers, keywords) {
 }
 
 /**
+ * Identifies the bank from CSV headers.
+ * Checks from most-specific to least-specific to avoid false matches.
+ */
+export function detectBank(headers) {
+  const h   = headers.map((s) => String(s ?? '').toLowerCase().trim())
+  const has = (kw) => h.some((col) => col.includes(kw))
+
+  if (has('narrative') || has('transaction date'))                   return 'FNB'
+  if (has('rand amount'))                                             return 'Nedbank'
+  if (has('debits') && has('credits'))                               return 'Standard Bank'
+  if (has('transaction type') || (has('debit') && has('credit')))    return 'Capitec'
+  if (has('transaction details'))                                     return 'Nedbank'
+  if (has('description') && has('amount') && has('date'))            return 'ABSA'
+  return 'Unknown'
+}
+
+/**
  * Given a list of header strings, returns the column mapping for our parser.
  * Returns: { dateField, descriptionField, amountField, debitField, creditField, isSplit }
  */

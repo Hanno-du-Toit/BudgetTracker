@@ -15,7 +15,7 @@ function weekLabel(dateStr) {
   return 'Wk 4'
 }
 
-export function useDashboardStats(month) {
+export function useDashboardStats(month, bankFilter = '') {
   const [transactions,    setTransactions]    = useState([])
   const [availableMonths, setAvailableMonths] = useState([])
   const [byMonth,         setByMonth]         = useState([])
@@ -69,7 +69,7 @@ export function useDashboardStats(month) {
       })
   }, [])
 
-  // Fetch transactions for the selected month
+  // Fetch transactions for the selected month (optionally filtered by bank)
   useEffect(() => {
     if (!month) return
     setTxLoading(true)
@@ -78,22 +78,40 @@ export function useDashboardStats(month) {
     const start = `${month}-01`
     const end   = `${month}-${lastDayOfMonth(month)}`
 
-    supabase
-      .from('transactions')
-      .select('id, transaction_date, description, amount, category')
-      .gte('transaction_date', start)
-      .lte('transaction_date', end)
-      .order('transaction_date', { ascending: false })
-      .then(({ data, error: err }) => {
-        if (err) {
-          console.error('[useDashboardStats]', err)
-          setError('Failed to load transactions. Please try again.')
-        } else {
-          setTransactions(data ?? [])
+    async function load() {
+      let query = supabase
+        .from('transactions')
+        .select('id, transaction_date, description, amount, category')
+        .gte('transaction_date', start)
+        .lte('transaction_date', end)
+        .order('transaction_date', { ascending: false })
+
+      if (bankFilter) {
+        const { data: stmts } = await supabase
+          .from('statements')
+          .select('id')
+          .eq('bank_name', bankFilter)
+        const ids = (stmts ?? []).map((s) => s.id)
+        if (ids.length === 0) {
+          setTransactions([])
+          setTxLoading(false)
+          return
         }
-        setTxLoading(false)
-      })
-  }, [month])
+        query = query.in('statement_id', ids)
+      }
+
+      const { data, error: err } = await query
+      if (err) {
+        console.error('[useDashboardStats]', err)
+        setError('Failed to load transactions. Please try again.')
+      } else {
+        setTransactions(data ?? [])
+      }
+      setTxLoading(false)
+    }
+
+    load()
+  }, [month, bankFilter])
 
   const stats = useMemo(() => {
     if (!transactions.length) return null

@@ -40,7 +40,7 @@ async function insertInBatches(rows) {
 export function useTransactions() {
 
   // ── upsertMany (upload flow) ────────────────────────────────────────────
-  const upsertMany = useCallback(async (transactions, fileName, manuallyChangedIds) => {
+  const upsertMany = useCallback(async (transactions, fileName, manuallyChangedIds, bankName = 'Unknown') => {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     if (sessionError || !session) throw new Error('Session expired — please sign in again.')
     const userId = session.user.id
@@ -80,6 +80,7 @@ export function useTransactions() {
         file_type:         detectFileType(fileName),
         statement_month:   statementMonth,
         transaction_count: unique.length,
+        bank_name:         bankName,
       })
       .select('id')
       .single()

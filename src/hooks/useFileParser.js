@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { parseCsv } from '@/services/csvParser'
 import { categorizeAll } from '@/services/claudeApi'
-import { detectColumns } from '@/utils/columnDetector'
+import { detectColumns, detectBank } from '@/utils/columnDetector'
 import { normalizeRows } from '@/utils/transactionNormalizer'
 import { MAX_FILE_SIZE_BYTES } from '@/constants/limits'
 import { supabase } from '@/services/supabase'
@@ -34,6 +34,7 @@ export function useFileParser() {
   const [error,              setError]              = useState(null)
   const [fileName,           setFileName]           = useState('')
   const [manuallyChangedIds, setManuallyChangedIds] = useState(() => new Set())
+  const [bankName,           setBankName]           = useState('Unknown')
 
   const parseFile = useCallback(async (file) => {
     setStatus('parsing')
@@ -53,9 +54,11 @@ export function useFileParser() {
       const { headers, rows } = await parseCsv(file)
       setProgress(30)
 
-      // 3 — Detect columns + normalise
+      // 3 — Detect columns + bank + normalise
       setParseStep('Detecting bank format…')
-      const columns = detectColumns(headers)
+      const columns  = detectColumns(headers)
+      const detected = detectBank(headers)
+      setBankName(detected)
       if (!columns.dateField) throw new Error('no_date_column')
       setProgress(40)
 
@@ -116,11 +119,12 @@ export function useFileParser() {
     setError(null)
     setFileName('')
     setManuallyChangedIds(new Set())
+    setBankName('Unknown')
   }, [])
 
   return {
     status, progress, parseStep, isAiStep,
-    transactions, error, fileName, manuallyChangedIds,
+    transactions, error, fileName, manuallyChangedIds, bankName,
     parseFile, reset, updateTransactionCategory,
   }
 }

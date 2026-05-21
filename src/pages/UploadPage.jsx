@@ -16,7 +16,7 @@ import Button from '@/components/ui/Button'
 export default function UploadPage() {
   const {
     status, progress, parseStep, isAiStep,
-    transactions, error, fileName, manuallyChangedIds,
+    transactions, error, fileName, manuallyChangedIds, bankName,
     parseFile, reset, updateTransactionCategory,
   } = useFileParser()
   const { upsertMany } = useTransactions()
@@ -43,7 +43,7 @@ export default function UploadPage() {
   async function handleConfirm() {
     setIsConfirming(true)
     try {
-      const { savedCount, duplicateCount } = await upsertMany(transactions, fileName, manuallyChangedIds)
+      const { savedCount, duplicateCount } = await upsertMany(transactions, fileName, manuallyChangedIds, bankName)
 
       if (savedCount === 0) {
         // Every transaction was already in the database

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { supabase } from '@/services/supabase'
 import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { formatCurrency } from '@/utils/formatters'
 import { ROUTES } from '@/constants/routes'
@@ -76,8 +77,21 @@ function ChartCarousel({ pieData, weekData, byMonth }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const [month, setMonth] = useState(CURRENT_MONTH)
-  const { loading, error, stats, availableMonths, byMonth } = useDashboardStats(month)
+  const [month,           setMonth]           = useState(CURRENT_MONTH)
+  const [bankFilter,      setBankFilter]      = useState('')
+  const [availableBanks,  setAvailableBanks]  = useState([])
+  const { loading, error, stats, availableMonths, byMonth } = useDashboardStats(month, bankFilter)
+
+  useEffect(() => {
+    supabase
+      .from('statements')
+      .select('bank_name')
+      .then(({ data }) => {
+        if (!data) return
+        const unique = [...new Set(data.map((r) => r.bank_name).filter(Boolean))]
+        setAvailableBanks(unique.sort())
+      })
+  }, [])
 
   const noDataAtAll    = !loading && !stats && availableMonths.length === 0
   const noDataForMonth = !loading && !stats && availableMonths.length > 0
@@ -88,7 +102,22 @@ export default function DashboardPage() {
 
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-8">
-          <MonthSelector month={month} onChange={setMonth} />
+          <div className="flex flex-wrap items-center gap-3">
+            <MonthSelector month={month} onChange={setMonth} />
+            {availableBanks.length > 1 && (
+              <select
+                value={bankFilter}
+                onChange={(e) => setBankFilter(e.target.value)}
+                className="bg-surface-100 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors cursor-pointer appearance-none"
+                aria-label="Filter by bank"
+              >
+                <option value="">All banks</option>
+                {availableBanks.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            )}
+          </div>
           <button
             onClick={() => navigate(ROUTES.UPLOAD)}
             className="text-sm text-white/40 hover:text-white transition-colors self-start sm:self-auto"
