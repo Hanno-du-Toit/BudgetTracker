@@ -15,7 +15,7 @@ const CURRENT_MONTH = new Date().toISOString().slice(0, 7)
 
 const btnClass =
   'w-9 h-9 flex items-center justify-center rounded-xl bg-surface-100 text-xl leading-none ' +
-  'text-white/50 hover:text-white hover:bg-white/10 transition-all ' +
+  'text-white/50 hover:text-white hover:bg-white/10 transition-colors ' +
   'disabled:opacity-25 disabled:cursor-not-allowed'
 
 export default function MonthSelector({ month, onChange }) {

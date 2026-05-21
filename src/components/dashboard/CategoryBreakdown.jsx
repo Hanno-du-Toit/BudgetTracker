@@ -21,7 +21,7 @@ export default function CategoryBreakdown({ categories }) {
             key={item.category}
             variants={SLIDE_UP}
             onClick={() => navigate(categoryRoute(item.category))}
-            className="flex items-center gap-3 text-left rounded-xl px-2 py-2 hover:bg-white/[0.06] transition-all group border-l-2 border-transparent hover:border-brand/30"
+            className="flex items-center gap-3 text-left rounded-xl px-2 py-2 hover:bg-white/[0.06] transition-colors group border-l-2 border-transparent hover:border-brand/30"
           >
             {/* Icon */}
             <div

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CATEGORIES } from '@/constants/categories'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
@@ -7,14 +7,10 @@ import CategoryBadge from './CategoryBadge'
 export default function EditCategoryModal({ isOpen, onClose, transaction, onSave, isSaving }) {
   const [selected, setSelected] = useState(transaction?.category ?? 'other')
 
-  // Reset selection whenever a different transaction is opened
-  if (transaction && selected !== transaction.category && !isSaving) {
-    // Only reset when the modal just opened for a new transaction
-  }
-
-  function handleOpen() {
-    setSelected(transaction?.category ?? 'other')
-  }
+  // Reset selection whenever the modal opens for a different transaction
+  useEffect(() => {
+    if (transaction) setSelected(transaction.category ?? 'other')
+  }, [transaction?.id])
 
   function handleSave() {
     onSave(transaction.id, selected)
@@ -43,7 +39,7 @@ export default function EditCategoryModal({ isOpen, onClose, transaction, onSave
                 onClick={() => setSelected(cat.slug)}
                 className={`
                   flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-left
-                  border transition-all duration-150
+                  border transition-colors duration-150
                   ${selected === cat.slug
                     ? 'border-brand bg-brand/10 text-white'
                     : 'border-white/5 bg-surface-100 text-white/60 hover:text-white hover:bg-white/5'}

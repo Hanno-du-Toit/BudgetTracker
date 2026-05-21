@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { FADE_IN, LIST_ITEM, STAGGER_CONTAINER } from '@/constants/animation'
+import { LIST_ITEM, STAGGER_CONTAINER } from '@/constants/animation'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import CategoryBadge from '@/components/transactions/CategoryBadge'
 import EditCategoryModal from '@/components/transactions/EditCategoryModal'
 import Button from '@/components/ui/Button'
+import Spinner from '@/components/ui/Spinner'
 
 function AmountCell({ amount }) {
   const isCredit = amount > 0
@@ -55,7 +56,7 @@ export default function TransactionReview({
   }
 
   return (
-    <motion.div {...FADE_IN} className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -128,13 +129,19 @@ export default function TransactionReview({
       )}
 
       {/* Actions */}
-      <div className="flex gap-3 pt-2">
-        <Button variant="secondary" onClick={onCancel} className="flex-1" disabled={isConfirming}>
-          Start over
-        </Button>
-        <Button onClick={onConfirm} isLoading={isConfirming} className="flex-1">
-          Save to my account
-        </Button>
+      <div className="flex items-center justify-center gap-3 pt-2 min-h-[42px]">
+        {isConfirming ? (
+          <Spinner size="md" />
+        ) : (
+          <>
+            <Button variant="secondary" onClick={onCancel} className="flex-1">
+              Start over
+            </Button>
+            <Button onClick={onConfirm} className="flex-1">
+              Save to my account
+            </Button>
+          </>
+        )}
       </div>
 
       {/* Edit category modal */}
@@ -145,6 +152,6 @@ export default function TransactionReview({
         onSave={handleCategoryApply}
         isSaving={false}
       />
-    </motion.div>
+    </div>
   )
 }

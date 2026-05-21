@@ -151,13 +151,15 @@ export default function DashboardPage() {
             <p className="text-white/40 text-sm mb-6">
               You have statements for:{' '}
               {availableMonths.slice(0, 4).map((m, i) => (
-                <button
-                  key={m}
-                  onClick={() => setMonth(m)}
-                  className="text-brand-light hover:text-white underline transition-colors"
-                >
-                  {m}{i < Math.min(availableMonths.length, 4) - 1 ? ', ' : ''}
-                </button>
+                <span key={m}>
+                  <button
+                    onClick={() => setMonth(m)}
+                    className="text-brand-light hover:text-white underline transition-colors"
+                  >
+                    {new Date(m + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })}
+                  </button>
+                  {i < Math.min(availableMonths.length, 4) - 1 ? ', ' : ''}
+                </span>
               ))}
             </p>
             <button

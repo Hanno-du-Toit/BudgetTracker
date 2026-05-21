@@ -280,7 +280,7 @@ export default function AppShell({ children }) {
       {/* Mobile bottom nav */}
       <MobileNav />
 
-      {/* Floating action menu — all screen sizes */}
+      {/* Floating action menu — desktop only */}
       <FloatingActionMenu />
     </div>
   )

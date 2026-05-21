@@ -15,7 +15,7 @@ import Button from '@/components/ui/Button'
 
 export default function UploadPage() {
   const {
-    status, progress, parseStep, isAiStep,
+    status, progress,
     transactions, error, fileName, manuallyChangedIds, bankName,
     parseFile, reset, updateTransactionCategory,
   } = useFileParser()
@@ -23,8 +23,9 @@ export default function UploadPage() {
   const { toast } = useToast()
   const navigate = useNavigate()
 
-  const [selectedFile,  setSelectedFile]  = useState(null)
-  const [isConfirming,  setIsConfirming]  = useState(false)
+  const [selectedFile,        setSelectedFile]        = useState(null)
+  const [isConfirming,        setIsConfirming]        = useState(false)
+  const [isSuccessNavigating, setIsSuccessNavigating] = useState(false)
 
   function handleFileAccepted(file) {
     setSelectedFile(file)
@@ -50,6 +51,7 @@ export default function UploadPage() {
         toast.error(
           `All ${duplicateCount} transaction${duplicateCount !== 1 ? 's' : ''} already exist — nothing was saved.`
         )
+        setIsConfirming(false)
         return
       }
 
@@ -57,6 +59,7 @@ export default function UploadPage() {
         ? `${savedCount} saved, ${duplicateCount} duplicate${duplicateCount !== 1 ? 's' : ''} skipped.`
         : `${savedCount} transaction${savedCount !== 1 ? 's' : ''} saved successfully!`
       toast.success(msg)
+      setIsSuccessNavigating(true)  // remove review from DOM in same render as navigate
       navigate(ROUTES.TRANSACTIONS)
     } catch (err) {
       console.error('[UploadPage] handleConfirm error:', err)
@@ -71,7 +74,6 @@ export default function UploadPage() {
       } else {
         toast.error(msg || 'Failed to save transactions. Please try again.')
       }
-    } finally {
       setIsConfirming(false)
     }
   }
@@ -93,7 +95,7 @@ export default function UploadPage() {
               key="idle"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0 } }}
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-4"
             >
@@ -118,12 +120,12 @@ export default function UploadPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0 } }}
             >
-              <ParseProgress progress={progress} parseStep={parseStep} isAiStep={isAiStep} />
+              <ParseProgress progress={progress} />
             </motion.div>
           )}
 
           {/* REVIEW */}
-          {status === 'review' && (
+          {status === 'review' && !isSuccessNavigating && (
             <motion.div
               key="review"
               initial={{ opacity: 0 }}

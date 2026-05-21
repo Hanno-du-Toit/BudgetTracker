@@ -38,7 +38,7 @@ export default function WeeklyBarChart({ weekData, monthData }) {
         <div className="flex gap-1 bg-white/[0.05] border border-white/[0.06] rounded-lg p-0.5">
           <button
             onClick={() => setView('weekly')}
-            className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-all ${
+            className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
               view === 'weekly'
                 ? 'bg-brand/20 text-brand-light border border-brand/20'
                 : 'text-white/40 hover:text-white/70'
@@ -48,7 +48,7 @@ export default function WeeklyBarChart({ weekData, monthData }) {
           </button>
           <button
             onClick={() => setView('monthly')}
-            className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-all ${
+            className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
               view === 'monthly'
                 ? 'bg-brand/20 text-brand-light border border-brand/20'
                 : 'text-white/40 hover:text-white/70'
