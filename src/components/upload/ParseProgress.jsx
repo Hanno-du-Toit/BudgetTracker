@@ -39,7 +39,7 @@ export default function ParseProgress({ progress, parseStep, isAiStep }) {
 
         {/* Progress bar */}
         <div className="w-full flex flex-col gap-2">
-          <div className="w-full h-0.5 bg-white/[0.08] rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
             <motion.div
               className="h-full rounded-full"
               style={{
@@ -50,8 +50,9 @@ export default function ParseProgress({ progress, parseStep, isAiStep }) {
                   ? '0 0 8px rgba(192,132,252,0.6)'
                   : '0 0 8px rgba(139,92,246,0.6)',
               }}
+              initial={{ width: '0%' }}
               animate={{ width: `${clampedProgress}%` }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
             />
           </div>
 

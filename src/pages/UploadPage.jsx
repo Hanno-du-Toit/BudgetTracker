@@ -89,7 +89,14 @@ export default function UploadPage() {
         <AnimatePresence mode="wait">
           {/* IDLE — choose file */}
           {status === 'idle' && (
-            <div key="idle" className="flex flex-col gap-4">
+            <motion.div
+              key="idle"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-4"
+            >
               <DropZone onFileAccepted={handleFileAccepted} />
 
               {selectedFile && (
@@ -100,7 +107,7 @@ export default function UploadPage() {
                   </Button>
                 </>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* PARSING */}
@@ -110,7 +117,7 @@ export default function UploadPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.2 }}
             >
               <ParseProgress progress={progress} parseStep={parseStep} isAiStep={isAiStep} />
             </motion.div>
@@ -118,7 +125,13 @@ export default function UploadPage() {
 
           {/* REVIEW */}
           {status === 'review' && (
-            <div key="review">
+            <motion.div
+              key="review"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <TransactionReview
                 transactions={transactions}
                 fileName={fileName}
@@ -127,19 +140,26 @@ export default function UploadPage() {
                 onCategoryChange={updateTransactionCategory}
                 isConfirming={isConfirming}
               />
-            </div>
+            </motion.div>
           )}
 
           {/* ERROR */}
           {status === 'error' && (
-            <div key="error" className="flex flex-col items-center gap-6 py-10 text-center">
+            <motion.div
+              key="error"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col items-center gap-6 py-10 text-center"
+            >
               <div className="text-5xl">😕</div>
               <div>
                 <h2 className="text-lg font-semibold mb-2">Couldn't read this file</h2>
                 <p className="text-white/50 text-sm max-w-sm leading-relaxed">{error}</p>
               </div>
               <Button onClick={reset}>Try a different file</Button>
-            </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </PageWrapper>
