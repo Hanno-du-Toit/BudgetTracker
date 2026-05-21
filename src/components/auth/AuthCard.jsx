@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@/constants/routes'
 import { STAGGER_CONTAINER, SLIDE_UP } from '@/constants/animation'
+import { BackgroundGradientAnimation } from '@/components/ui/BackgroundGradientAnimation'
 
 export function AuthLogo() {
   return (
@@ -15,17 +16,24 @@ export function AuthLogo() {
 }
 
 export function AuthCard({ children }) {
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <motion.div
-        className="w-full max-w-md"
-        variants={STAGGER_CONTAINER}
-        initial="initial"
-        animate="animate"
-      >
-        {children}
-      </motion.div>
-    </div>
+    <>
+      <BackgroundGradientAnimation
+        interactive={!isMobile}
+        containerClassName="z-0 pointer-events-none"
+      />
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
+        <motion.div
+          className="w-full max-w-md"
+          variants={STAGGER_CONTAINER}
+          initial="initial"
+          animate="animate"
+        >
+          {children}
+        </motion.div>
+      </div>
+    </>
   )
 }
 

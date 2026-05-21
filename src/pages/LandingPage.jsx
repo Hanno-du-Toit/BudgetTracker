@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ROUTES, STAGGER_CONTAINER, SLIDE_UP, FADE_IN, DURATION, EASING } from '@/constants'
 import PageWrapper from '@/components/layout/PageWrapper'
 import Button from '@/components/ui/Button'
+import { BackgroundGradientAnimation } from '@/components/ui/BackgroundGradientAnimation'
 
 const FEATURES = [
   {
@@ -29,18 +30,15 @@ const STATS = [
 ]
 
 export default function LandingPage() {
-  return (
-    <PageWrapper className="min-h-screen flex flex-col bg-surface overflow-x-hidden">
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
 
-      {/* Background glow — decorative radial gradient */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 90% 55% at 50% -5%, rgba(124,92,252,0.20) 0%, transparent 65%)',
-        }}
+  return (
+    <>
+      <BackgroundGradientAnimation
+        interactive={!isMobile}
+        containerClassName="z-0 pointer-events-none"
       />
+      <PageWrapper className="relative z-10 min-h-screen flex flex-col overflow-x-hidden">
 
       {/* Top nav */}
       <nav className="relative z-10 w-full max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
@@ -150,5 +148,6 @@ export default function LandingPage() {
         BudgetTracker · Built with care · Your data stays yours
       </footer>
     </PageWrapper>
+    </>
   )
 }

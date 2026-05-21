@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { ROUTES } from '@/constants/routes'
+import { BackgroundGradientAnimation } from '@/components/ui/BackgroundGradientAnimation'
 
 const NAV_LINKS = [
   { to: ROUTES.DASHBOARD,    label: 'Dashboard',    icon: '📊' },
@@ -85,6 +86,15 @@ export default function AppShell({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Subtle animated gradient backdrop */}
+      <div className="opacity-30 pointer-events-none">
+        <BackgroundGradientAnimation
+          interactive={false}
+          size="40%"
+          containerClassName="z-0"
+        />
+      </div>
+
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-white/5 bg-surface/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
@@ -121,7 +131,7 @@ export default function AppShell({ children }) {
       </header>
 
       {/* Page content — pb accounts for the mobile bottom nav */}
-      <main className="flex-1 pb-20 md:pb-0">
+      <main className="relative flex-1 pb-20 md:pb-0">
         {children}
       </main>
 
