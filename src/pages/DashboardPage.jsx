@@ -28,7 +28,7 @@ function ChartCarousel({ pieData, weekData, byMonth }) {
     <div className="sm:hidden mb-6">
       <div className="overflow-hidden">
         <motion.div
-          className="flex"
+          className="flex items-stretch"
           style={{ width: '200%' }}
           animate={{ x: active === 0 ? '0%' : '-50%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -40,10 +40,10 @@ function ChartCarousel({ pieData, weekData, byMonth }) {
             else if (offset.x > 50 && active === 1) setActive(0)
           }}
         >
-          <div style={{ width: '50%' }}>
+          <div style={{ width: '50%' }} className="h-full min-h-[420px]">
             <SpendingPieChart data={pieData} />
           </div>
-          <div style={{ width: '50%' }}>
+          <div style={{ width: '50%' }} className="h-full min-h-[420px]">
             <WeeklyBarChart weekData={weekData} monthData={byMonth} />
           </div>
         </motion.div>
