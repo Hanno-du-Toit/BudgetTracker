@@ -110,14 +110,12 @@ export default function UploadPage() {
             </motion.div>
           )}
 
-          {/* PARSING */}
+          {/* PARSING — no exit animation so the bar never lingers into the review state */}
           {status === 'parsing' && (
             <motion.div
               key="parsing"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
             >
               <ParseProgress progress={progress} parseStep={parseStep} isAiStep={isAiStep} />
             </motion.div>
