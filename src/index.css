@@ -29,6 +29,14 @@
   }
 }
 
+select option {
+  background-color: #0f0a28;
+  color: white;
+}
+select {
+  color-scheme: dark;
+}
+
 @layer components {
   .card {
     @apply bg-white/[0.03] backdrop-blur-sm rounded-2xl border border-white/[0.08] p-4;

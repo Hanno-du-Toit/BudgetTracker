@@ -71,13 +71,17 @@ export default function DropZone({ onFileAccepted, disabled = false }) {
         <motion.div
           animate={{ y: isDragOver ? -4 : 0 }}
           transition={{ duration: 0.2 }}
-          className={`flex items-center justify-center w-16 h-16 rounded-2xl ${
-            isDragOver ? 'bg-brand/20 text-brand-light' : 'bg-white/[0.05] text-white/30'
+          className={`flex items-center justify-center rounded-2xl ${
+            isDragOver ? 'bg-brand/20 text-brand-light p-4' : ''
           } transition-colors duration-150`}
         >
           {isDragOver
             ? <FolderOpen className="h-8 w-8" />
-            : <FileUp className="h-8 w-8" />
+            : (
+              <div className="bg-purple-500/20 rounded-2xl p-4 shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+                <FileUp className="text-purple-400 w-10 h-10" />
+              </div>
+            )
           }
         </motion.div>
 

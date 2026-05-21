@@ -41,6 +41,7 @@ export default function TransactionFilter({
           onChange={(e) => onCategory(e.target.value)}
           className={selectClass}
           aria-label="Filter by category"
+          style={{ backgroundColor: '#0f0a28', color: 'white' }}
         >
           <option value="">All categories</option>
           {CATEGORIES.map((c) => (
@@ -54,6 +55,7 @@ export default function TransactionFilter({
           onChange={(e) => onMonth(e.target.value)}
           className={selectClass}
           aria-label="Filter by month"
+          style={{ backgroundColor: '#0f0a28', color: 'white' }}
         >
           <option value="">All months</option>
           {availableMonths.map((m) => (
@@ -68,6 +70,7 @@ export default function TransactionFilter({
         onChange={(e) => onSort(e.target.value)}
         className={selectClass}
         aria-label="Sort transactions"
+        style={{ backgroundColor: '#0f0a28', color: 'white' }}
       >
         <option value="transaction_date-desc">Date: Newest first</option>
         <option value="transaction_date-asc">Date: Oldest first</option>
