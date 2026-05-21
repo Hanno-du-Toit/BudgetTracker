@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useFileParser } from '@/hooks/useFileParser'
 import { useTransactions } from '@/hooks/useTransactions'
 import { useToast } from '@/context/ToastContext'
@@ -105,9 +105,15 @@ export default function UploadPage() {
 
           {/* PARSING */}
           {status === 'parsing' && (
-            <div key="parsing">
+            <motion.div
+              key="parsing"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
               <ParseProgress progress={progress} parseStep={parseStep} isAiStep={isAiStep} />
-            </div>
+            </motion.div>
           )}
 
           {/* REVIEW */}
