@@ -289,7 +289,7 @@ export default function LandingPage() {
                 <SpotlightCard
                   glowColor="purple"
                   customSize
-                  className="card text-left flex flex-col gap-3 hover:border-white/10 transition-colors duration-200 h-full"
+                  className="card text-left flex flex-col gap-3 transition-colors duration-200 h-full bg-white/3 backdrop-blur-sm border-white/10 sm:bg-surface-50 sm:backdrop-blur-none sm:border-white/5 hover:border-white/10"
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/10">
                     <f.Icon className="h-5 w-5 text-purple-400" />
