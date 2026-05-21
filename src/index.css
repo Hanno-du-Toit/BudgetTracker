@@ -33,6 +33,11 @@ select option {
   background-color: #0f0a28;
   color: white;
 }
+select option:checked,
+select option:hover {
+  background: rgba(139, 92, 246, 0.4) !important;
+  color: white !important;
+}
 select {
   color-scheme: dark;
 }

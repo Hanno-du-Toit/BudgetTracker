@@ -4,6 +4,7 @@ import { LayoutDashboard, Upload, Receipt, Settings } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { ROUTES } from '@/constants/routes'
 import { BackgroundGradientAnimation } from '@/components/ui/BackgroundGradientAnimation'
+import FloatingActionMenu from '@/components/ui/FloatingActionMenu'
 
 // ── Animation variants ────────────────────────────────────────────────────────
 
@@ -276,6 +277,9 @@ export default function AppShell({ children }) {
 
       {/* Mobile bottom nav */}
       <MobileNav />
+
+      {/* Floating action menu — all screen sizes */}
+      <FloatingActionMenu />
     </div>
   )
 }
