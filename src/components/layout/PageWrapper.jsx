@@ -7,7 +7,7 @@ export default function PageWrapper({ children, className = '' }) {
       className={`w-full ${className}`}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0, transition: { duration: DURATION.normal, ease: EASING.out } }}
-      exit={{ opacity: 0, transition: { duration: DURATION.fast } }}
+      exit={{ opacity: 0, transition: { duration: 0 } }}
     >
       {children}
     </motion.div>
