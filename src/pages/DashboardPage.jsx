@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useDashboardStats } from '@/hooks/useDashboardStats'
@@ -23,9 +23,14 @@ function SkeletonBlock({ className = '' }) {
 
 function ChartCarousel({ pieData, weekData, byMonth }) {
   const [active, setActive] = useState(0)
+  const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef(null)
 
-  const slideOffset = (containerRef.current?.offsetWidth ?? 0) + 16
+  useEffect(() => {
+    if (containerRef.current) setContainerWidth(containerRef.current.offsetWidth)
+  }, [])
+
+  const slideOffset = containerWidth + 16
 
   return (
     <div ref={containerRef} className="sm:hidden mb-6 overflow-hidden w-full">
@@ -34,8 +39,9 @@ function ChartCarousel({ pieData, weekData, byMonth }) {
         animate={{ x: active === 0 ? 0 : -slideOffset }}
         transition={{ type: 'spring', stiffness: 200, damping: 25, mass: 0.8 }}
         drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
+        dragConstraints={{ left: -slideOffset, right: 0 }}
         dragElastic={0.05}
+        dragMomentum={false}
         onDragEnd={(_, { offset }) => {
           if (offset.x < -50 && active === 0) setActive(1)
           else if (offset.x > 50 && active === 1) setActive(0)

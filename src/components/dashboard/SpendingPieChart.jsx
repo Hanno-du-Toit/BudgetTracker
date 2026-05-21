@@ -19,7 +19,7 @@ function PieTooltip({ active, payload }) {
 export default function SpendingPieChart({ data }) {
   if (!data?.length) return null
   return (
-    <div className="card">
+    <div className="card h-full">
       <h3 className="text-sm font-semibold text-white/70 mb-1">Spending by category</h3>
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>

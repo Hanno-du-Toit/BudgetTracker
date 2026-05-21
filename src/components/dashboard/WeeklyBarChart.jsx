@@ -30,7 +30,7 @@ export default function WeeklyBarChart({ weekData, monthData }) {
   const max = data.length ? Math.max(...data.map((d) => d.spend), 1) : 1
 
   return (
-    <div className="card">
+    <div className="card h-full">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-semibold text-white/70">
           {view === 'weekly' ? 'Spending by week' : 'Spending by month'}
