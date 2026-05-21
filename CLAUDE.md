@@ -13,3 +13,13 @@ All development must follow **STANDARDS.md** in the project root. Key points:
 - Bank statement files are parsed client-side only — never sent to any server.
 - Supabase RLS enabled on every table.
 - No hardcoded values; use `src/constants/` or config files.
+
+## How to Operate
+
+1. **Check existing components first** — before building anything new, check `src/components/` and `src/hooks/` to see if something already exists for that task. Reuse and extend rather than duplicate.
+
+2. **When things fail** — read the full error, fix it, verify it works, then move on. Don't create workarounds that leave broken code behind.
+
+3. **Keep changes focused** — only touch files directly related to the task. Don't refactor unrelated code while fixing something else.
+
+4. **Verify before committing** — make sure the change works as expected before committing. Don't commit broken code.
