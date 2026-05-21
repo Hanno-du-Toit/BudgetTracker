@@ -1,5 +1,10 @@
 import { CATEGORIES } from '@/constants/categories'
 
+function formatMonthLabel(yearMonth) {
+  const [year, month] = yearMonth.split('-')
+  return new Date(year, month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })
+}
+
 const selectClass =
   'bg-surface-100 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white ' +
   'focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand ' +
@@ -52,7 +57,7 @@ export default function TransactionFilter({
         >
           <option value="">All months</option>
           {availableMonths.map((m) => (
-            <option key={m} value={m}>{m}</option>
+            <option key={m} value={m}>{formatMonthLabel(m)}</option>
           ))}
         </select>
       </div>
