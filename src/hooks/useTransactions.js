@@ -145,6 +145,16 @@ export function useTransactions() {
     return data ?? []
   }, [])
 
+  // ── loadAvailableMonths ──────────────────────────────────────────────────
+  const loadAvailableMonths = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('transaction_date')
+      .order('transaction_date', { ascending: false })
+    if (error) throwSupabaseError('months fetch', error)
+    return [...new Set((data ?? []).map((t) => t.transaction_date.slice(0, 7)))]
+  }, [])
+
   // ── loadStatements ──────────────────────────────────────────────────────
   const loadStatements = useCallback(async () => {
     const { data, error } = await supabase
@@ -190,6 +200,7 @@ export function useTransactions() {
   return {
     upsertMany,
     loadTransactions,
+    loadAvailableMonths,
     loadStatements,
     updateCategory,
     deleteTransaction,

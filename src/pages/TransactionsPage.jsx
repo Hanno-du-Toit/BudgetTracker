@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTransactions } from '@/hooks/useTransactions'
@@ -109,7 +109,7 @@ function UploadsPanel({ statements, onDelete }) {
 export default function TransactionsPage() {
   const navigate  = useNavigate()
   const { toast } = useToast()
-  const { loadTransactions, loadStatements, updateCategory, deleteTransaction, deleteStatement } =
+  const { loadTransactions, loadAvailableMonths, loadStatements, updateCategory, deleteTransaction, deleteStatement } =
     useTransactions()
 
   // Filter state
@@ -137,11 +137,8 @@ export default function TransactionsPage() {
   const sortBy   = sort.slice(0, lastDash)
   const sortDir  = sort.slice(lastDash + 1)
 
-  const filtersActive   = !!(debSearch || category || month)
-  const availableMonths = useMemo(
-    () => [...new Set(statements.map((s) => s.statement_month))].sort().reverse(),
-    [statements]
-  )
+  const filtersActive                       = !!(debSearch || category || month)
+  const [availableMonths, setAvailableMonths] = useState([])
 
   // Debounce search input
   useEffect(() => {
@@ -160,10 +157,14 @@ export default function TransactionsPage() {
 
   useEffect(() => { reload() }, [reload])
 
-  // Load statements once on mount
+  // Load statements and available months once on mount
   useEffect(() => {
     loadStatements().then(setStatements).catch(console.error)
   }, [loadStatements])
+
+  useEffect(() => {
+    loadAvailableMonths().then(setAvailableMonths).catch(console.error)
+  }, [loadAvailableMonths])
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
