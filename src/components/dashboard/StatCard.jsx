@@ -11,12 +11,13 @@ export default function StatCard({ label, value, color = 'text-white', icon, loa
     )
   }
   return (
-    <motion.div {...SLIDE_UP} className="card p-3 sm:p-4">
-      <p className="text-[11px] sm:text-xs text-white/40 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+    <motion.div {...SLIDE_UP} className="card p-3 sm:p-4 relative overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <p className="text-[10px] sm:text-[11px] text-white/35 uppercase tracking-widest mb-1.5 flex items-center gap-1.5 font-medium">
         {icon && <span>{icon}</span>}
         {label}
       </p>
-      <p className={`text-lg sm:text-2xl font-bold tabular-nums truncate ${color}`}>{value}</p>
+      <p className={`text-xl sm:text-2xl font-bold tabular-nums truncate ${color}`}>{value}</p>
     </motion.div>
   )
 }

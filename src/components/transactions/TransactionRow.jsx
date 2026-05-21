@@ -12,7 +12,7 @@ function AmountCell({ amount }) {
 
 export default function TransactionRow({ txn, onEditCategory, onDelete }) {
   return (
-    <div className="grid grid-cols-[72px_1fr_auto_auto] sm:grid-cols-[80px_1fr_130px_110px_36px] gap-2 px-4 py-3 items-start sm:items-center hover:bg-white/[0.02] transition-colors group">
+    <div className="grid grid-cols-[72px_1fr_auto_auto] sm:grid-cols-[80px_1fr_130px_110px_36px] gap-2 px-4 py-3 items-start sm:items-center hover:bg-white/[0.05] transition-all group border-l-2 border-transparent hover:border-brand/30">
       {/* Date */}
       <span className="text-xs text-white/40 tabular-nums">
         {formatDate(txn.transaction_date)}

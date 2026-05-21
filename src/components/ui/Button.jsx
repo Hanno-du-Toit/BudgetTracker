@@ -2,10 +2,10 @@ import { motion } from 'framer-motion'
 import Spinner from './Spinner'
 
 const VARIANTS = {
-  primary:   'bg-brand hover:bg-brand-dark text-white shadow-glow hover:shadow-none',
-  secondary: 'bg-surface-100 hover:bg-surface-200 text-white border border-white/10',
-  ghost:     'bg-transparent hover:bg-surface-100 text-white/70 hover:text-white',
-  danger:    'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20',
+  primary:   'bg-brand hover:bg-brand-dark text-white shadow-glow hover:shadow-[0_0_30px_rgba(124,92,252,0.55)] transition-shadow',
+  secondary: 'bg-white/[0.07] hover:bg-white/[0.12] text-white border border-white/10 backdrop-blur-sm',
+  ghost:     'bg-transparent hover:bg-white/[0.06] text-white/70 hover:text-white',
+  danger:    'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]',
 }
 
 const SIZES = {

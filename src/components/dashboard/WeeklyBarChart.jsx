@@ -8,7 +8,7 @@ import { formatCurrency } from '@/utils/formatters'
 function BarTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-surface-100 border border-white/10 rounded-xl px-3 py-2 text-sm shadow-lg">
+    <div className="bg-black/70 backdrop-blur-md border border-white/10 rounded-xl px-3 py-2 text-sm shadow-lg shadow-black/30">
       <p className="text-white/50 mb-0.5">{label}</p>
       <p className="text-white font-medium tabular-nums">{formatCurrency(payload[0].value)}</p>
     </div>
@@ -32,15 +32,15 @@ export default function WeeklyBarChart({ weekData, monthData }) {
   return (
     <div className="card h-full flex flex-col">
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-sm font-semibold text-white/70">
+        <h3 className="text-[10px] font-semibold text-white/35 uppercase tracking-widest">
           {view === 'weekly' ? 'Spending by week' : 'Spending by month'}
         </h3>
-        <div className="flex gap-1 bg-white/5 rounded-lg p-0.5">
+        <div className="flex gap-1 bg-white/[0.05] border border-white/[0.06] rounded-lg p-0.5">
           <button
             onClick={() => setView('weekly')}
-            className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
+            className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-all ${
               view === 'weekly'
-                ? 'bg-white/10 text-white'
+                ? 'bg-brand/20 text-brand-light border border-brand/20'
                 : 'text-white/40 hover:text-white/70'
             }`}
           >
@@ -48,9 +48,9 @@ export default function WeeklyBarChart({ weekData, monthData }) {
           </button>
           <button
             onClick={() => setView('monthly')}
-            className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
+            className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-all ${
               view === 'monthly'
-                ? 'bg-white/10 text-white'
+                ? 'bg-brand/20 text-brand-light border border-brand/20'
                 : 'text-white/40 hover:text-white/70'
             }`}
           >

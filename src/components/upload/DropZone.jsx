@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { FileUp, FolderOpen, Lock } from 'lucide-react'
 import { MAX_FILE_SIZE_MB } from '@/constants/limits'
 
 const CSV_TIPS = [
@@ -70,9 +71,14 @@ export default function DropZone({ onFileAccepted, disabled = false }) {
         <motion.div
           animate={{ y: isDragOver ? -4 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-5xl"
+          className={`flex items-center justify-center w-16 h-16 rounded-2xl ${
+            isDragOver ? 'bg-brand/20 text-brand-light' : 'bg-white/[0.05] text-white/30'
+          } transition-colors duration-150`}
         >
-          {isDragOver ? '📂' : '📊'}
+          {isDragOver
+            ? <FolderOpen className="h-8 w-8" />
+            : <FileUp className="h-8 w-8" />
+          }
         </motion.div>
 
         <div className="text-center">
@@ -155,8 +161,9 @@ export default function DropZone({ onFileAccepted, disabled = false }) {
         </AnimatePresence>
       </div>
 
-      <p className="text-xs text-white/20 text-center">
-        🔒 Files are read in your browser — never uploaded to any server
+      <p className="flex items-center justify-center gap-1.5 text-xs text-white/20 text-center">
+        <Lock className="h-3 w-3 shrink-0" />
+        Files are read in your browser — never uploaded to any server
       </p>
     </div>
   )

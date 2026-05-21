@@ -6,7 +6,7 @@ function PieTooltip({ active, payload }) {
   if (!active || !payload?.length) return null
   const { category, total, pct, fill } = payload[0].payload
   return (
-    <div className="bg-surface-100 border border-white/10 rounded-xl px-3 py-2 text-sm shadow-lg">
+    <div className="bg-black/70 backdrop-blur-md border border-white/10 rounded-xl px-3 py-2 text-sm shadow-lg shadow-black/30">
       <p className="font-medium mb-0.5" style={{ color: fill }}>
         {CATEGORY_LABELS[category] ?? category}
       </p>
@@ -20,7 +20,7 @@ export default function SpendingPieChart({ data }) {
   if (!data?.length) return null
   return (
     <div className="card h-full">
-      <h3 className="text-sm font-semibold text-white/70 mb-1">Spending by category</h3>
+      <h3 className="text-[10px] font-semibold text-white/35 uppercase tracking-widest mb-1">Spending by category</h3>
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie

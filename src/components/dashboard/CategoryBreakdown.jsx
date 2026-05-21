@@ -9,7 +9,7 @@ export default function CategoryBreakdown({ categories }) {
   const navigate = useNavigate()
   return (
     <div className="card">
-      <h3 className="text-sm font-semibold text-white/70 mb-4">Top spending categories</h3>
+      <h3 className="text-[10px] font-semibold text-white/35 uppercase tracking-widest mb-4">Top spending categories</h3>
       <motion.div
         variants={STAGGER_CONTAINER}
         initial="initial"
@@ -21,7 +21,7 @@ export default function CategoryBreakdown({ categories }) {
             key={item.category}
             variants={SLIDE_UP}
             onClick={() => navigate(categoryRoute(item.category))}
-            className="flex items-center gap-3 text-left rounded-xl px-2 py-2 hover:bg-white/5 transition-colors group"
+            className="flex items-center gap-3 text-left rounded-xl px-2 py-2 hover:bg-white/[0.06] transition-all group border-l-2 border-transparent hover:border-brand/30"
           >
             {/* Icon */}
             <div
@@ -47,7 +47,7 @@ export default function CategoryBreakdown({ categories }) {
               <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ backgroundColor: item.fill }}
+                  style={{ backgroundColor: item.fill, boxShadow: `0 0 8px ${item.fill}80` }}
                   initial={{ width: 0 }}
                   animate={{ width: `${(item.pct * 100).toFixed(1)}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}

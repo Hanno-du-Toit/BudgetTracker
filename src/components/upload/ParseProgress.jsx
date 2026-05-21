@@ -68,13 +68,16 @@ export default function ParseProgress({ progress, parseStep, isAiStep }) {
 
       {/* Progress bar */}
       <div className="w-full max-w-sm flex flex-col gap-2">
-        <div className="bg-surface-100 rounded-full h-2 overflow-hidden">
+        <div className="bg-white/[0.06] rounded-full h-2 overflow-hidden">
           <motion.div
             className="h-full rounded-full"
             style={{
               background: isAiStep
                 ? 'linear-gradient(90deg, #7c5cfc, #9d82fd, #e879f9)'
                 : 'linear-gradient(90deg, #7c5cfc, #9d82fd)',
+              boxShadow: isAiStep
+                ? '0 0 12px rgba(232, 121, 249, 0.5)'
+                : '0 0 12px rgba(124, 92, 252, 0.45)',
             }}
             initial={{ width: '0%' }}
             animate={{ width: `${progress}%` }}

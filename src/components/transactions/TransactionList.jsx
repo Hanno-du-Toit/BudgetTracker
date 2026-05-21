@@ -4,9 +4,9 @@ import TransactionRow from './TransactionRow'
 
 export default function TransactionList({ transactions, onEditCategory, onDelete }) {
   return (
-    <div className="bg-surface-50 border border-white/5 rounded-2xl overflow-hidden">
+    <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] rounded-2xl overflow-hidden">
       {/* Column headers */}
-      <div className="grid grid-cols-[72px_1fr_auto_auto] sm:grid-cols-[80px_1fr_130px_110px_36px] gap-2 px-4 py-2.5 border-b border-white/5 text-[11px] text-white/30 uppercase tracking-wide">
+      <div className="grid grid-cols-[72px_1fr_auto_auto] sm:grid-cols-[80px_1fr_130px_110px_36px] gap-2 px-4 py-2.5 border-b border-white/[0.06] text-[10px] text-white/30 uppercase tracking-widest font-medium">
         <span>Date</span>
         <span>Description</span>
         <span className="hidden sm:block">Category</span>

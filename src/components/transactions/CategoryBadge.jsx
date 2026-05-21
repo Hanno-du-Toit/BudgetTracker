@@ -25,6 +25,7 @@ export default function CategoryBadge({ category, onClick, size = 'sm' }) {
         color,
         backgroundColor: `${color}18`,
         borderColor:      `${color}30`,
+        boxShadow:        `0 0 8px ${color}20`,
       }}
       title={onClick ? `Change category (currently: ${label})` : label}
     >

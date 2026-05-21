@@ -6,9 +6,9 @@ function formatMonthLabel(yearMonth) {
 }
 
 const selectClass =
-  'bg-surface-100 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white ' +
-  'focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand ' +
-  'transition-colors duration-150 cursor-pointer appearance-none'
+  'bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white ' +
+  'focus:outline-none focus:border-brand/60 focus:ring-1 focus:ring-brand/30 ' +
+  'transition-colors duration-150 cursor-pointer appearance-none backdrop-blur-sm'
 
 export default function TransactionFilter({
   search,      onSearch,

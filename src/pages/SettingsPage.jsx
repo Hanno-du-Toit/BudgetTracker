@@ -16,7 +16,7 @@ function SettingsSection({ title, description, children }) {
   return (
     <motion.div variants={SLIDE_UP} className="card flex flex-col gap-5">
       <div>
-        <h2 className="text-base font-semibold text-white">{title}</h2>
+        <h2 className="text-[10px] font-semibold text-white/35 uppercase tracking-widest">{title}</h2>
         {description && (
           <p className="text-sm text-white/40 mt-0.5">{description}</p>
         )}
@@ -437,10 +437,14 @@ function DangerZone({ onSignOut }) {
   }
 
   return (
-    <SettingsSection
-      title="Danger zone"
-      description="Irreversible actions — please be careful."
+    <motion.div
+      variants={SLIDE_UP}
+      className="card flex flex-col gap-5 border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.06)]"
     >
+      <div>
+        <h2 className="text-[10px] font-semibold text-red-400/70 uppercase tracking-widest">Danger zone</h2>
+        <p className="text-sm text-white/40 mt-0.5">Irreversible actions — please be careful.</p>
+      </div>
       <div className="flex items-center justify-between gap-4 py-1">
         <div>
           <p className="text-sm font-medium text-white/80">Sign out</p>
@@ -452,7 +456,7 @@ function DangerZone({ onSignOut }) {
           Sign out
         </Button>
       </div>
-    </SettingsSection>
+    </motion.div>
   )
 }
 
