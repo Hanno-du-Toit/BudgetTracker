@@ -124,8 +124,8 @@ export default function UploadPage() {
             </motion.div>
           )}
 
-          {/* REVIEW — only mount after progress bar has reached 100% */}
-          {status === 'review' && !isSuccessNavigating && progress >= 100 && (
+          {/* REVIEW */}
+          {status === 'review' && !isSuccessNavigating && (
             <motion.div
               key="review"
               initial={{ opacity: 0 }}

@@ -6,7 +6,7 @@ import { formatCurrency } from '@/utils/formatters'
 export default function StatCard({ label, value, color = 'text-white', icon, loading, onAddIncome, expectedIncome, incomeLabel }) {
   if (loading) {
     return (
-      <div className="card animate-pulse p-3 sm:p-4">
+      <div className="card animate-pulse p-3 sm:p-4 min-h-[100px]">
         <div className="h-3 w-16 bg-white/5 rounded-full mb-2" />
         <div className="h-6 w-28 bg-white/5 rounded-full" />
       </div>
@@ -16,7 +16,7 @@ export default function StatCard({ label, value, color = 'text-white', icon, loa
   const EditIcon = expectedIncome != null ? Pencil : PlusCircle
 
   return (
-    <motion.div {...SLIDE_UP} className="card p-3 sm:p-4 relative overflow-hidden">
+    <motion.div {...SLIDE_UP} className="card p-3 sm:p-4 relative overflow-hidden min-h-[100px]">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       <p className="text-[10px] sm:text-[11px] text-white/35 uppercase tracking-widest mb-1.5 flex items-center gap-1.5 font-medium">
         {icon && <span>{icon}</span>}
@@ -32,12 +32,12 @@ export default function StatCard({ label, value, color = 'text-white', icon, loa
         )}
       </p>
       <p className={`text-xl sm:text-2xl font-bold tabular-nums truncate ${color}`}>{value}</p>
-      {expectedIncome != null && (
-        <p className="text-xs text-white/40 mt-1 tabular-nums">
-          {incomeLabel ? `${incomeLabel}: ` : 'Expected: '}
-          {formatCurrency(expectedIncome)}
-        </p>
-      )}
+      {/* Reserve consistent space — shown when set, invisible placeholder otherwise */}
+      <p className="text-xs text-white/40 mt-1 tabular-nums h-4">
+        {expectedIncome != null
+          ? <>{incomeLabel ? `${incomeLabel}: ` : 'Expected: '}{formatCurrency(expectedIncome)}</>
+          : null}
+      </p>
     </motion.div>
   )
 }
