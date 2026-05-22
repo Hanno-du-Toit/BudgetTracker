@@ -1,12 +1,13 @@
-import AppShell from '@/components/layout/AppShell'
-import PageWrapper from '@/components/layout/PageWrapper'
+import { useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
 export default function CategoryPage() {
-  return (
-    <AppShell>
-      <PageWrapper className="max-w-6xl mx-auto px-4 py-10">
-        <p className="text-white/40 text-sm">Category drill-down coming in Phase 8.</p>
-      </PageWrapper>
-    </AppShell>
-  )
+  const navigate = useNavigate()
+  const { slug } = useParams()
+
+  useEffect(() => {
+    navigate(`/transactions?category=${slug}`, { replace: true })
+  }, [navigate, slug])
+
+  return null
 }

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { STAGGER_CONTAINER, SLIDE_UP } from '@/constants/animation'
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/constants/categories'
 import { formatCurrency } from '@/utils/formatters'
-import { categoryRoute } from '@/constants/routes'
 
 export default function CategoryBreakdown({ categories }) {
   const navigate = useNavigate()
@@ -20,7 +19,7 @@ export default function CategoryBreakdown({ categories }) {
           <motion.button
             key={item.category}
             variants={SLIDE_UP}
-            onClick={() => navigate(categoryRoute(item.category))}
+            onClick={() => navigate(`/transactions?category=${item.category}`)}
             className="flex items-center gap-3 text-left rounded-xl px-2 py-2 hover:bg-white/[0.06] transition-colors group border-l-2 border-transparent hover:border-brand/30"
           >
             {/* Icon */}

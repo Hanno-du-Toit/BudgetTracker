@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTransactions } from '@/hooks/useTransactions'
 import { useToast } from '@/context/ToastContext'
@@ -114,10 +114,12 @@ export default function TransactionsPage() {
   const { loadTransactions, loadAvailableMonths, loadStatements, updateCategory, deleteTransaction, deleteStatement } =
     useTransactions()
 
+  const [searchParams] = useSearchParams()
+
   // Filter state
   const [search,    setSearch]    = useState('')
   const [debSearch, setDebSearch] = useState('')
-  const [category,  setCategory]  = useState('')
+  const [category,  setCategory]  = useState(() => searchParams.get('category') ?? '')
   const [month,     setMonth]     = useState('')
   const [sort,      setSort]      = useState('transaction_date-desc')
 
