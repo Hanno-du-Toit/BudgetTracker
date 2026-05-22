@@ -100,6 +100,11 @@ export default function DashboardPage() {
   const noDataAtAll    = !loading && !stats && availableMonths.length === 0
   const noDataForMonth = !loading && !stats && availableMonths.length > 0
 
+  // If the user has set a monthly income target, use it for Net Flow instead of actual income
+  const displayNetFlow = stats
+    ? (monthlyIncome != null ? monthlyIncome - stats.totalSpend : stats.netFlow)
+    : 0
+
   return (
     <AppShell>
       <PageWrapper className="max-w-6xl mx-auto px-4 pt-4 pb-8 sm:py-8">
@@ -217,9 +222,9 @@ export default function DashboardPage() {
               <div className="col-span-2 sm:col-span-1">
                 <StatCard
                   label="Net flow"
-                  value={formatCurrency(stats.netFlow)}
-                  color={stats.netFlow >= 0 ? 'text-green-400' : 'text-red-400'}
-                  icon={stats.netFlow >= 0 ? '📈' : '📉'}
+                  value={formatCurrency(displayNetFlow)}
+                  color={displayNetFlow >= 0 ? 'text-green-400' : 'text-red-400'}
+                  icon={displayNetFlow >= 0 ? '📈' : '📉'}
                 />
               </div>
             </div>

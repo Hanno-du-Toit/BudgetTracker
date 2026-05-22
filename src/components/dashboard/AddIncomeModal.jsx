@@ -10,12 +10,19 @@ export default function AddIncomeModal({ isOpen, onClose, currentAmount, current
   const [isSaving, setIsSaving] = useState(false)
   const amountRef             = useRef(null)
 
+  // Sync form values whenever the modal opens or when the saved values change while it's open
   useEffect(() => {
     if (!isOpen) return
     setAmount(currentAmount != null ? String(currentAmount) : '')
     setLabel(currentLabel ?? '')
-    setTimeout(() => amountRef.current?.focus(), 60)
   }, [isOpen, currentAmount, currentLabel])
+
+  // Focus the amount input only when the modal first opens
+  useEffect(() => {
+    if (!isOpen) return
+    const t = setTimeout(() => amountRef.current?.focus(), 60)
+    return () => clearTimeout(t)
+  }, [isOpen])
 
   useEffect(() => {
     if (!isOpen) return
@@ -23,6 +30,20 @@ export default function AddIncomeModal({ isOpen, onClose, currentAmount, current
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [isOpen, onClose])
+
+  async function handleClear() {
+    setIsSaving(true)
+    try {
+      await saveMonthlyIncome(null, null)
+      toast.success('Monthly income removed.')
+      onClose()
+    } catch (err) {
+      console.error('[AddIncomeModal] clear failed:', err)
+      toast.error('Failed to remove. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   async function handleSave() {
     const parsed = parseFloat(amount)
@@ -98,6 +119,19 @@ export default function AddIncomeModal({ isOpen, onClose, currentAmount, current
                 />
               </div>
             </div>
+
+            {/* Clear existing setting */}
+            {currentAmount != null && (
+              <div className="mb-3 -mt-1">
+                <button
+                  onClick={handleClear}
+                  disabled={isSaving}
+                  className="text-xs text-white/30 hover:text-white/60 transition-colors duration-150 cursor-pointer disabled:opacity-50"
+                >
+                  Remove monthly income
+                </button>
+              </div>
+            )}
 
             {/* Label */}
             <div className="mb-6">
