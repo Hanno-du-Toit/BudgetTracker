@@ -167,20 +167,12 @@ export default function DashboardPage() {
               </select>
             )}
           </div>
-          <div className="flex items-center gap-3 self-start sm:self-auto">
-            <button
-              onClick={() => { setEditingIncome(null); setIncomeModalOpen(true) }}
-              className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-xl transition-colors duration-150"
-            >
-              + Add income
-            </button>
-            <button
-              onClick={() => navigate(ROUTES.UPLOAD)}
-              className="text-sm text-white/40 hover:text-white transition-colors"
-            >
-              + Upload statement
-            </button>
-          </div>
+          <button
+            onClick={() => navigate(ROUTES.UPLOAD)}
+            className="text-sm text-white/40 hover:text-white transition-colors self-start sm:self-auto"
+          >
+            + Upload statement
+          </button>
         </div>
 
         {/* Manual income entries */}
@@ -316,6 +308,7 @@ export default function DashboardPage() {
                 value={formatCurrency(stats.totalIncome)}
                 color="text-green-400"
                 icon="💰"
+                onAddIncome={() => { setEditingIncome(null); setIncomeModalOpen(true) }}
               />
               <div className="col-span-2 sm:col-span-1">
                 <StatCard

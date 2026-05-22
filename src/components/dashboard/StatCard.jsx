@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
+import { PlusCircle } from 'lucide-react'
 import { SLIDE_UP } from '@/constants/animation'
 
-export default function StatCard({ label, value, color = 'text-white', icon, loading }) {
+export default function StatCard({ label, value, color = 'text-white', icon, loading, onAddIncome }) {
   if (loading) {
     return (
       <div className="card animate-pulse p-3 sm:p-4">
@@ -16,6 +17,15 @@ export default function StatCard({ label, value, color = 'text-white', icon, loa
       <p className="text-[10px] sm:text-[11px] text-white/35 uppercase tracking-widest mb-1.5 flex items-center gap-1.5 font-medium">
         {icon && <span>{icon}</span>}
         {label}
+        {onAddIncome && (
+          <button
+            onClick={onAddIncome}
+            className="ml-auto text-white/40 hover:text-white/80 transition-colors duration-150 cursor-pointer"
+            aria-label="Add income"
+          >
+            <PlusCircle className="w-4 h-4" />
+          </button>
+        )}
       </p>
       <p className={`text-xl sm:text-2xl font-bold tabular-nums truncate ${color}`}>{value}</p>
     </motion.div>

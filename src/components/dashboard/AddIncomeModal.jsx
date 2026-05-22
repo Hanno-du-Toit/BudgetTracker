@@ -46,18 +46,19 @@ export default function AddIncomeModal({ isOpen, onClose, onSaved, month, editin
         toast.success('Income updated.')
       } else {
         const { data: { session } } = await supabase.auth.getSession()
-        const { error } = await supabase
+        const { error, data: inserted } = await supabase
           .from('transactions')
           .insert({
-            id:                    crypto.randomUUID(),
-            user_id:               session.user.id,
-            statement_id:          null,
-            transaction_date:      `${month}-01`,
-            description:           description.trim() || 'Monthly income',
-            amount:                parsed,
-            category:              'income',
+            id:                      crypto.randomUUID(),
+            user_id:                 session.user.id,
+            transaction_date:        `${month}-01`,
+            description:             description.trim() || 'Monthly income',
+            amount:                  parsed,
+            category:                'income',
             is_manually_categorized: true,
           })
+          .select()
+        console.log('[AddIncomeModal] insert result:', { error, inserted })
         if (error) throw error
         toast.success('Income added.')
       }
@@ -65,7 +66,7 @@ export default function AddIncomeModal({ isOpen, onClose, onSaved, month, editin
       onSaved()
       onClose()
     } catch (err) {
-      console.error('[AddIncomeModal]', err)
+      console.error('[AddIncomeModal] save failed:', err?.message ?? err)
       toast.error('Failed to save. Please try again.')
     } finally {
       setIsSaving(false)
