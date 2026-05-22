@@ -18,7 +18,17 @@ import CategoryBreakdown from '@/components/dashboard/CategoryBreakdown'
 import RecentTransactions from '@/components/dashboard/RecentTransactions'
 import AddIncomeModal from '@/components/dashboard/AddIncomeModal'
 
-const CURRENT_MONTH = new Date().toISOString().slice(0, 7)
+const CURRENT_MONTH    = new Date().toISOString().slice(0, 7)
+const SESSION_MONTH_KEY = 'dashboard_month'
+const MONTH_RE          = /^\d{4}-\d{2}$/
+
+function getInitialMonth() {
+  try {
+    const stored = sessionStorage.getItem(SESSION_MONTH_KEY)
+    if (stored && MONTH_RE.test(stored)) return stored
+  } catch {}
+  return CURRENT_MONTH
+}
 
 function SkeletonBlock({ className = '' }) {
   return <div className={`card animate-pulse ${className}`} />
@@ -78,7 +88,7 @@ function ChartCarousel({ pieData, weekData, byMonth }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const [month,          setMonth]          = useState(CURRENT_MONTH)
+  const [month,          setMonth]          = useState(getInitialMonth)
   const [bankFilter,     setBankFilter]     = useState('')
   const [availableBanks, setAvailableBanks] = useState([])
   const [incomeModalOpen, setIncomeModalOpen] = useState(false)
@@ -97,6 +107,11 @@ export default function DashboardPage() {
       })
   }, [])
 
+  function handleMonthChange(newMonth) {
+    setMonth(newMonth)
+    try { sessionStorage.setItem(SESSION_MONTH_KEY, newMonth) } catch {}
+  }
+
   const noDataAtAll    = !loading && !stats && availableMonths.length === 0
   const noDataForMonth = !loading && !stats && availableMonths.length > 0
 
@@ -112,7 +127,7 @@ export default function DashboardPage() {
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-8">
           <div className="flex flex-wrap items-center gap-3">
-            <MonthSelector month={month} onChange={setMonth} />
+            <MonthSelector month={month} onChange={handleMonthChange} />
             {availableBanks.length > 1 && (
               <select
                 value={bankFilter}
@@ -162,7 +177,7 @@ export default function DashboardPage() {
               {availableMonths.slice(0, 4).map((m, i) => (
                 <span key={m}>
                   <button
-                    onClick={() => setMonth(m)}
+                    onClick={() => handleMonthChange(m)}
                     className="text-brand-light hover:text-white underline transition-colors"
                   >
                     {new Date(m + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })}
