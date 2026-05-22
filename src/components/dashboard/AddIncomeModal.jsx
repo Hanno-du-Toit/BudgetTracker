@@ -1,22 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase } from '@/services/supabase'
 import { useToast } from '@/context/ToastContext'
 
-export default function AddIncomeModal({ isOpen, onClose, onSaved, month, editingEntry = null }) {
-  const { toast }                   = useToast()
-  const [amount, setAmount]         = useState('')
-  const [description, setDescription] = useState('')
-  const [isSaving, setIsSaving]     = useState(false)
-  const amountRef                   = useRef(null)
+export default function AddIncomeModal({ isOpen, onClose, currentAmount, currentLabel, saveMonthlyIncome }) {
+  const { toast }             = useToast()
+  const [amount, setAmount]   = useState('')
+  const [label,  setLabel]    = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const amountRef             = useRef(null)
 
   useEffect(() => {
     if (!isOpen) return
-    setAmount(editingEntry ? String(editingEntry.amount) : '')
-    setDescription(editingEntry ? editingEntry.description : '')
+    setAmount(currentAmount != null ? String(currentAmount) : '')
+    setLabel(currentLabel ?? '')
     setTimeout(() => amountRef.current?.focus(), 60)
-  }, [isOpen, editingEntry])
+  }, [isOpen, currentAmount, currentLabel])
 
   useEffect(() => {
     if (!isOpen) return
@@ -31,42 +30,13 @@ export default function AddIncomeModal({ isOpen, onClose, onSaved, month, editin
       toast.error('Amount must be a positive number.')
       return
     }
-
     setIsSaving(true)
     try {
-      if (editingEntry) {
-        const { error } = await supabase
-          .from('transactions')
-          .update({
-            amount:      parsed,
-            description: description.trim() || 'Monthly income',
-          })
-          .eq('id', editingEntry.id)
-        if (error) throw error
-        toast.success('Income updated.')
-      } else {
-        const { data: { session } } = await supabase.auth.getSession()
-        const { error, data: inserted } = await supabase
-          .from('transactions')
-          .insert({
-            id:                      crypto.randomUUID(),
-            user_id:                 session.user.id,
-            transaction_date:        `${month}-01`,
-            description:             description.trim() || 'Monthly income',
-            amount:                  parsed,
-            category:                'income',
-            is_manually_categorized: true,
-          })
-          .select()
-        console.log('[AddIncomeModal] insert result:', { error, inserted })
-        if (error) throw error
-        toast.success('Income added.')
-      }
-
-      onSaved()
+      await saveMonthlyIncome(parsed, label.trim())
+      toast.success('Monthly income saved.')
       onClose()
     } catch (err) {
-      console.error('[AddIncomeModal] save failed:', err?.message ?? err)
+      console.error('[AddIncomeModal]', err)
       toast.error('Failed to save. Please try again.')
     } finally {
       setIsSaving(false)
@@ -101,8 +71,10 @@ export default function AddIncomeModal({ isOpen, onClose, onSaved, month, editin
           >
             {/* Header */}
             <div className="mb-5">
-              <h2 className="text-lg font-semibold tracking-tight">Add Income</h2>
-              <p className="text-sm text-white/40 mt-0.5">Manually add income for this month</p>
+              <h2 className="text-lg font-semibold tracking-tight">Monthly Income</h2>
+              <p className="text-sm text-white/40 mt-0.5 leading-relaxed">
+                Set your expected monthly income — shown every month until you change it
+              </p>
             </div>
 
             {/* Amount */}
@@ -127,18 +99,18 @@ export default function AddIncomeModal({ isOpen, onClose, onSaved, month, editin
               </div>
             </div>
 
-            {/* Description */}
+            {/* Label */}
             <div className="mb-6">
               <label className="block text-[10px] font-semibold text-white/35 uppercase tracking-widest mb-2">
-                Description (optional)
+                Label (e.g. Dad's allowance, Bursary)
               </label>
               <input
                 type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Monthly allowance"
-                maxLength={100}
+                placeholder="Monthly salary"
+                maxLength={60}
                 className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3 text-sm text-white
                            placeholder-white/20 outline-none focus:border-brand/50 transition-colors duration-150"
               />
@@ -162,7 +134,7 @@ export default function AddIncomeModal({ isOpen, onClose, onSaved, month, editin
                            hover:shadow-[0_0_30px_rgba(124,92,252,0.55)]
                            disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
               >
-                {isSaving ? 'Saving…' : editingEntry ? 'Update' : 'Save'}
+                {isSaving ? 'Saving…' : 'Save'}
               </button>
             </div>
           </motion.div>

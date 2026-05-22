@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion'
-import { PlusCircle } from 'lucide-react'
+import { PlusCircle, Pencil } from 'lucide-react'
 import { SLIDE_UP } from '@/constants/animation'
+import { formatCurrency } from '@/utils/formatters'
 
-export default function StatCard({ label, value, color = 'text-white', icon, loading, onAddIncome }) {
+export default function StatCard({ label, value, color = 'text-white', icon, loading, onAddIncome, expectedIncome, incomeLabel }) {
   if (loading) {
     return (
       <div className="card animate-pulse p-3 sm:p-4">
@@ -11,6 +12,9 @@ export default function StatCard({ label, value, color = 'text-white', icon, loa
       </div>
     )
   }
+
+  const EditIcon = expectedIncome != null ? Pencil : PlusCircle
+
   return (
     <motion.div {...SLIDE_UP} className="card p-3 sm:p-4 relative overflow-hidden">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
@@ -21,13 +25,19 @@ export default function StatCard({ label, value, color = 'text-white', icon, loa
           <button
             onClick={onAddIncome}
             className="ml-auto text-white/40 hover:text-white/80 transition-colors duration-150 cursor-pointer"
-            aria-label="Add income"
+            aria-label={expectedIncome != null ? 'Edit monthly income' : 'Set monthly income'}
           >
-            <PlusCircle className="w-4 h-4" />
+            <EditIcon className="w-4 h-4" />
           </button>
         )}
       </p>
       <p className={`text-xl sm:text-2xl font-bold tabular-nums truncate ${color}`}>{value}</p>
+      {expectedIncome != null && (
+        <p className="text-xs text-white/40 mt-1 tabular-nums">
+          {incomeLabel ? `${incomeLabel}: ` : 'Expected: '}
+          {formatCurrency(expectedIncome)}
+        </p>
+      )}
     </motion.div>
   )
 }
