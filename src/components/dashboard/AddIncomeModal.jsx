@@ -126,7 +126,7 @@ export default function AddIncomeModal({ isOpen, onClose, currentAmount, current
                 <button
                   onClick={handleClear}
                   disabled={isSaving}
-                  className="text-xs text-white/30 hover:text-white/60 transition-colors duration-150 cursor-pointer disabled:opacity-50"
+                  className="text-xs text-red-400/70 hover:text-red-400 underline underline-offset-2 transition-colors duration-150 cursor-pointer disabled:opacity-50"
                 >
                   Remove monthly income
                 </button>
