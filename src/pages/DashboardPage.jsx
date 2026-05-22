@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { supabase } from '@/services/supabase'
@@ -15,6 +15,7 @@ import SpendingPieChart from '@/components/dashboard/SpendingPieChart'
 import WeeklyBarChart from '@/components/dashboard/WeeklyBarChart'
 import CategoryBreakdown from '@/components/dashboard/CategoryBreakdown'
 import RecentTransactions from '@/components/dashboard/RecentTransactions'
+import AddIncomeModal from '@/components/dashboard/AddIncomeModal'
 
 const CURRENT_MONTH = new Date().toISOString().slice(0, 7)
 
@@ -80,7 +81,16 @@ export default function DashboardPage() {
   const [month,           setMonth]           = useState(CURRENT_MONTH)
   const [bankFilter,      setBankFilter]      = useState('')
   const [availableBanks,  setAvailableBanks]  = useState([])
-  const { loading, error, stats, availableMonths, byMonth } = useDashboardStats(month, bankFilter)
+
+  // Manual income state
+  const [refreshKey,       setRefreshKey]       = useState(0)
+  const [incomeModalOpen,  setIncomeModalOpen]  = useState(false)
+  const [editingIncome,    setEditingIncome]    = useState(null)
+  const [manualIncomes,    setManualIncomes]    = useState([])
+  const [confirmDeleteId,  setConfirmDeleteId]  = useState(null)
+  const [isDeletingIncome, setIsDeletingIncome] = useState(false)
+
+  const { loading, error, stats, availableMonths, byMonth } = useDashboardStats(month, bankFilter, refreshKey)
 
   useEffect(() => {
     supabase
@@ -93,6 +103,45 @@ export default function DashboardPage() {
       })
   }, [])
 
+  // Load manual income entries for the selected month
+  const loadManualIncomes = useCallback(async () => {
+    const [y, m] = month.split('-').map(Number)
+    const nextM = m === 12
+      ? `${y + 1}-01`
+      : `${y}-${String(m + 1).padStart(2, '0')}`
+    const { data } = await supabase
+      .from('transactions')
+      .select('id, description, amount, transaction_date')
+      .eq('category', 'income')
+      .is('statement_id', null)
+      .gte('transaction_date', `${month}-01`)
+      .lt('transaction_date', `${nextM}-01`)
+      .order('transaction_date', { ascending: false })
+    setManualIncomes(data ?? [])
+  }, [month])
+
+  useEffect(() => { loadManualIncomes() }, [loadManualIncomes])
+
+  function handleIncomeSaved() {
+    loadManualIncomes()
+    setRefreshKey((k) => k + 1)
+  }
+
+  async function handleConfirmDelete(id) {
+    setIsDeletingIncome(true)
+    try {
+      const { error: err } = await supabase.from('transactions').delete().eq('id', id)
+      if (err) throw err
+      setConfirmDeleteId(null)
+      loadManualIncomes()
+      setRefreshKey((k) => k + 1)
+    } catch {
+      // leave confirm open so user can retry
+    } finally {
+      setIsDeletingIncome(false)
+    }
+  }
+
   const noDataAtAll    = !loading && !stats && availableMonths.length === 0
   const noDataForMonth = !loading && !stats && availableMonths.length > 0
 
@@ -101,7 +150,7 @@ export default function DashboardPage() {
       <PageWrapper className="max-w-6xl mx-auto px-4 pt-4 pb-8 sm:py-8">
 
         {/* Header row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6">
           <div className="flex flex-wrap items-center gap-3">
             <MonthSelector month={month} onChange={setMonth} />
             {availableBanks.length > 1 && (
@@ -118,13 +167,74 @@ export default function DashboardPage() {
               </select>
             )}
           </div>
-          <button
-            onClick={() => navigate(ROUTES.UPLOAD)}
-            className="text-sm text-white/40 hover:text-white transition-colors self-start sm:self-auto"
-          >
-            + Upload statement
-          </button>
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <button
+              onClick={() => { setEditingIncome(null); setIncomeModalOpen(true) }}
+              className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white text-sm px-3 py-1.5 rounded-xl transition-colors duration-150"
+            >
+              + Add income
+            </button>
+            <button
+              onClick={() => navigate(ROUTES.UPLOAD)}
+              className="text-sm text-white/40 hover:text-white transition-colors"
+            >
+              + Upload statement
+            </button>
+          </div>
         </div>
+
+        {/* Manual income entries */}
+        {manualIncomes.length > 0 && (
+          <motion.div {...FADE_IN} className="mb-4 sm:mb-6 flex flex-col gap-2">
+            {manualIncomes.map((entry) => (
+              <div
+                key={entry.id}
+                className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-2.5"
+              >
+                <span className="flex-1 text-sm text-white/70 truncate">{entry.description}</span>
+                {confirmDeleteId === entry.id ? (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-white/40">Remove?</span>
+                    <button
+                      onClick={() => handleConfirmDelete(entry.id)}
+                      disabled={isDeletingIncome}
+                      className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors disabled:opacity-50"
+                    >
+                      Yes
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(null)}
+                      disabled={isDeletingIncome}
+                      className="text-xs text-white/40 hover:text-white transition-colors"
+                    >
+                      No
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-sm font-semibold text-green-400 tabular-nums shrink-0">
+                      +{formatCurrency(entry.amount)}
+                    </span>
+                    <button
+                      onClick={() => { setEditingIncome(entry); setIncomeModalOpen(true) }}
+                      className="text-white/25 hover:text-white/70 transition-colors shrink-0 p-1 text-sm leading-none"
+                      aria-label="Edit income entry"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(entry.id)}
+                      className="text-white/25 hover:text-red-400 transition-colors shrink-0 p-1 text-sm leading-none"
+                      aria-label="Delete income entry"
+                    >
+                      🗑️
+                    </button>
+                  </>
+                )}
+              </div>
+            ))}
+          </motion.div>
+        )}
 
         {/* Error banner */}
         {error && (
@@ -239,6 +349,14 @@ export default function DashboardPage() {
         )}
 
       </PageWrapper>
+
+      <AddIncomeModal
+        isOpen={incomeModalOpen}
+        onClose={() => { setIncomeModalOpen(false); setEditingIncome(null) }}
+        onSaved={handleIncomeSaved}
+        month={month}
+        editingEntry={editingIncome}
+      />
     </AppShell>
   )
 }

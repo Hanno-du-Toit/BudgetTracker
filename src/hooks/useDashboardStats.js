@@ -15,7 +15,7 @@ function weekLabel(dateStr) {
   return 'Wk 4'
 }
 
-export function useDashboardStats(month, bankFilter = '') {
+export function useDashboardStats(month, bankFilter = '', refreshKey = 0) {
   const [transactions,    setTransactions]    = useState([])
   const [availableMonths, setAvailableMonths] = useState([])
   const [byMonth,         setByMonth]         = useState([])
@@ -111,7 +111,7 @@ export function useDashboardStats(month, bankFilter = '') {
     }
 
     load()
-  }, [month, bankFilter])
+  }, [month, bankFilter, refreshKey])
 
   const stats = useMemo(() => {
     if (!transactions.length) return null
