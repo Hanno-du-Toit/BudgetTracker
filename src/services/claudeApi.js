@@ -8,10 +8,12 @@ const MODEL   = 'claude-haiku-4-5-20251001'
 
 const CATEGORY_RULES = [
   { category: 'groceries',     keywords: ['checkers', 'woolworths', 'pick n pay', 'pnp', 'shoprite', 'spar', 'food lover', 'sixty60', 'woollies'] },
-  { category: 'fuel',          keywords: ['engen', 'shell', 'bp ', 'caltex', 'sasol', 'total garage', 'astron'] },
+  { category: 'fuel',          keywords: ['engen', 'shell', 'bp ', 'caltex', 'sasol', 'total garage', 'astron', 'uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll', 'sanral'] },
   { category: 'dining',        keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur', 'fishaways', 'galito', 'draak', 'toro north', 'klipoog', 'kafeteria', 'serv preto'] },
-  { category: 'transport',     keywords: ['uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll', 'sanral'] },
-  { category: 'shopping',      keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on', 'game store', 'makro', 'builder', 'pep store', 'ackermans', 'cum books', 'kloppers'] },
+  { category: 'shopping',      keywords: ['game store', 'makro', 'builder', 'cum books', 'kloppers', 'balloon party'] },
+  { category: 'home_repairs',  keywords: ['builders', 'cashbuild', 'hardware', 'plumber', 'electrician', 'leroy merlin', 'mica'] },
+  { category: 'haircut',       keywords: ['barber', 'hair salon', 'hairdresser', 'cuts', 'hair cut'] },
+  { category: 'clothing',      keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on', 'woolworths clothing', 'markham', 'exact', 'identity', 'jet store', 'ackermans', 'pep store'] },
   { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema', 'nu metro', 'ster kinekor', 'playtomic', 'padel circle', 'padel'] },
   { category: 'healthcare',    keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist', 'medcross'] },
   { category: 'insurance',     keywords: ['outsurance', 'discovery life', 'momentum', 'sanlam', 'old mutual', 'hollard', 'miway', 'pps '] },
@@ -85,7 +87,7 @@ Rules:
 - Return ONLY a valid JSON array. No markdown, no explanation, no other text.
 - Format: [{"id":"<id>","category":"<slug>"}]
 - Positive amounts are credits/income → use "income" unless clearly a refund or reversal
-- South African context: "SPAR", "PNP", "WOOLWORTHS FOOD" → groceries; "ENGEN", "SHELL", "BP", "SASOL" → fuel; "UBER", "BOLT" → transport; "NETFLIX", "DSTV", "SPOTIFY" → entertainment; "OUTSURANCE", "DISCOVERY", "SANLAM" → insurance; "SERVICE FEE", "BANK CHARGE" → banking_fees
+- South African context: "SPAR", "PNP", "WOOLWORTHS FOOD" → groceries; "ENGEN", "SHELL", "BP", "SASOL", "UBER", "BOLT" → fuel; "NETFLIX", "DSTV", "SPOTIFY" → entertainment; "OUTSURANCE", "DISCOVERY", "SANLAM" → insurance; "SERVICE FEE", "BANK CHARGE" → banking_fees; "MR PRICE", "ZARA", "EDGARS" → clothing; "BUILDERS", "CASHBUILD", "HARDWARE" → home_repairs
 - Use "other" only if genuinely uncertain
 ${knownMappings}
 Transactions to categorize:
