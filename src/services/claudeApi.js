@@ -10,9 +10,9 @@ const CATEGORY_RULES = [
   { category: 'groceries',     keywords: ['checkers', 'woolworths', 'pick n pay', 'pnp', 'shoprite', 'spar', 'food lover', 'sixty60', 'woollies'] },
   { category: 'fuel',          keywords: ['engen', 'shell', 'bp ', 'caltex', 'sasol', 'total garage', 'astron', 'uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll', 'sanral'] },
   { category: 'dining',        keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur', 'fishaways', 'galito', 'draak', 'toro north', 'klipoog', 'kafeteria', 'serv preto'] },
-  { category: 'shopping',      keywords: ['game store', 'makro', 'builder', 'cum books', 'kloppers', 'balloon party'] },
+  { category: 'shopping',      keywords: ['game store', 'makro', 'builder', 'cum books', 'kloppers', 'balloon party', 'takealot'] },
   { category: 'home_repairs',  keywords: ['builders', 'cashbuild', 'hardware', 'plumber', 'electrician', 'leroy merlin', 'mica'] },
-  { category: 'haircut',       keywords: ['barber', 'hair salon', 'hairdresser', 'cuts', 'hair cut'] },
+  { category: 'haircut',       keywords: ['barber', 'hair salon', 'hairdresser', 'cuts', 'hair cut', 'excellent barber', 'hpy*', 'barber shop'] },
   { category: 'clothing',      keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on', 'woolworths clothing', 'markham', 'exact', 'identity', 'jet store', 'ackermans', 'pep store'] },
   { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema', 'nu metro', 'ster kinekor', 'playtomic', 'padel circle', 'padel'] },
   { category: 'healthcare',    keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist', 'medcross'] },
@@ -37,6 +37,13 @@ export function ruleBasedCategorize(description, amount) {
 
 export function detectInternalTransfer(description, userAccountNumbers = []) {
   const lower = description.toLowerCase()
+  const hasAccounts = userAccountNumbers.length > 0
+
+  if (hasAccounts) {
+    if (lower.includes('digital transf dt absa bank h') || lower.includes('digital transf cr absa bank h')) return true
+    if (lower.includes('inetbnk trf credit absa bank h')) return true
+  }
+
   const isTransfer = lower.includes('digital transf') || lower.includes('digital payment dt') || lower.includes('digital payment cr')
   if (!isTransfer) return false
   const normalizedDesc = lower.replace(/[-\s]/g, '')
