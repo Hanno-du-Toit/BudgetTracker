@@ -18,7 +18,7 @@ const CATEGORY_RULES = [
   { category: 'healthcare',    keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist', 'medcross'] },
   { category: 'insurance',     keywords: ['outsurance', 'discovery life', 'momentum', 'sanlam', 'old mutual', 'hollard', 'miway', 'pps '] },
   { category: 'subscriptions', keywords: ['virgin active', 'virgin act', 'netcash'] },
-  { category: 'banking_fees',  keywords: ['monthly fee', 'bank charge', 'notific fee', 'notification fee', 'transaction fee', 'service fee', 'sms fee', 'notifyme', 'card fee', 'annual fee', 'monthly acc fee', 'acc fee'] },
+  { category: 'banking_fees',  keywords: ['monthly fee', 'bank charge', 'notific fee', 'notification fee', 'transaction fee', 'service fee', 'sms fee', 'notifyme', 'card fee', 'annual fee', 'monthly acc fee', 'acc fee', 'insufficient funds fee', 'funds transfer fee', 'finance charge', 'insufficient funds'] },
   { category: 'utilities',     keywords: ['eskom', 'municipality', 'water ', 'electricity', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre', 'prepaid', 'airtime', 'rain '] },
   { category: 'investments',   keywords: ['easy equities', 'ee-', 'easyequities', 'etf', 'satrix'] },
   { category: 'income',        keywords: ['salary', 'payroll', 'payment received', 'acb credit'] },
