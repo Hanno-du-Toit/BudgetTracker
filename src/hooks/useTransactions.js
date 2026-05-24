@@ -132,7 +132,7 @@ export function useTransactions() {
       )
 
     if (search.trim()) query = query.ilike('description', `%${search.trim()}%`)
-    if (category)       query = query.eq('category', category)
+    if (category)       query = query.eq('category', category.toLowerCase())
     if (month) {
       query = query
         .gte('transaction_date', `${month}-01`)
