@@ -1,22 +1,28 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/context/ToastContext'
 import { ROUTES, SLIDE_UP, STAGGER_CONTAINER, AVATAR_COLORS, CURRENCY_OPTIONS, DATE_FORMAT_OPTIONS, DEFAULT_CURRENCY, DEFAULT_DATE_FORMAT } from '@/constants'
+import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/constants/categories'
 import { supabase } from '@/services/supabase'
 import AppShell from '@/components/layout/AppShell'
 import PageWrapper from '@/components/layout/PageWrapper'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
+const ADMIN_EMAIL = 'hanno.shark@gmail.com'
+
 // ── Section card ───────────────────────────────────────────────────────────────
 
-function SettingsSection({ title, description, children }) {
+function SettingsSection({ title, description, children, badge }) {
   return (
     <motion.div variants={SLIDE_UP} className="card flex flex-col gap-5">
       <div>
-        <h2 className="text-[10px] font-semibold text-white/35 uppercase tracking-widest">{title}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-[10px] font-semibold text-white/35 uppercase tracking-widest">{title}</h2>
+          {badge}
+        </div>
         {description && (
           <p className="text-sm text-white/40 mt-0.5">{description}</p>
         )}
@@ -425,6 +431,136 @@ function MyAccountsSection() {
   )
 }
 
+// ── Keyword Approvals (admin only) ────────────────────────────────────────────
+
+function KeywordApprovalsSection() {
+  const { toast }                       = useToast()
+  const [pending,    setPending]        = useState([])
+  const [loading,    setLoading]        = useState(true)
+  const [actingOn,   setActingOn]       = useState(null)  // pattern being acted on
+
+  useEffect(() => {
+    supabase
+      .from('pending_keywords')
+      .select('description_pattern, category, suggestion_count')
+      .order('suggestion_count', { ascending: false })
+      .then(({ data }) => {
+        setPending(data ?? [])
+        setLoading(false)
+      })
+  }, [])
+
+  async function handleApprove(item) {
+    setActingOn(item.description_pattern)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { setActingOn(null); return }
+
+    await supabase.from('global_keywords').upsert({
+      description_pattern: item.description_pattern,
+      category:            item.category,
+      approved_by:         session.user.id,
+      suggestion_count:    item.suggestion_count,
+    }, { onConflict: 'description_pattern' })
+
+    await supabase.from('pending_keywords').delete().eq('description_pattern', item.description_pattern)
+
+    setPending((prev) => prev.filter((p) => p.description_pattern !== item.description_pattern))
+    setActingOn(null)
+    toast.success(`"${item.description_pattern}" approved and added to global keywords.`)
+  }
+
+  async function handleReject(item) {
+    setActingOn(item.description_pattern)
+
+    await supabase.from('pending_keywords').delete().eq('description_pattern', item.description_pattern)
+    await supabase.from('keyword_suggestions').delete().eq('description_pattern', item.description_pattern)
+
+    setPending((prev) => prev.filter((p) => p.description_pattern !== item.description_pattern))
+    setActingOn(null)
+    toast.success(`"${item.description_pattern}" rejected and removed.`)
+  }
+
+  const badge = !loading && pending.length > 0 ? (
+    <span className="text-[10px] bg-amber-400/20 text-amber-400 px-1.5 py-0.5 rounded-full font-semibold tabular-nums">
+      {pending.length} pending
+    </span>
+  ) : null
+
+  return (
+    <SettingsSection
+      title="Keyword Approvals"
+      description="Community-suggested merchant patterns waiting for approval before being applied globally."
+      badge={badge}
+    >
+      {loading ? (
+        <div className="flex flex-col gap-2 animate-pulse">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-14 bg-white/[0.04] rounded-xl" />
+          ))}
+        </div>
+      ) : pending.length === 0 ? (
+        <p className="text-sm text-white/30">No pending keywords — the system is up to date ✅</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          <AnimatePresence initial={false}>
+            {pending.map((item) => {
+              const isActing = actingOn === item.description_pattern
+              const icon     = CATEGORY_ICONS[item.category] ?? '📦'
+              const label    = CATEGORY_LABELS[item.category] ?? item.category
+
+              return (
+                <motion.li
+                  key={item.description_pattern}
+                  layout
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-between gap-3 bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-mono text-white/90 truncate">
+                      {item.description_pattern}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-white/40">
+                        {icon} {label}
+                      </span>
+                      <span className="text-[10px] text-white/25">·</span>
+                      <span className="text-[10px] text-amber-400/70">
+                        {item.suggestion_count} user{item.suggestion_count !== 1 ? 's' : ''} agreed
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      disabled={isActing}
+                      onClick={() => handleApprove(item)}
+                      className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      ✅ Approve
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isActing}
+                      onClick={() => handleReject(item)}
+                      className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      ❌ Reject
+                    </button>
+                  </div>
+                </motion.li>
+              )
+            })}
+          </AnimatePresence>
+        </ul>
+      )}
+    </SettingsSection>
+  )
+}
+
 // ── Danger zone ────────────────────────────────────────────────────────────────
 
 function DangerZone({ onSignOut }) {
@@ -544,6 +680,7 @@ export default function SettingsPage() {
               onSave={handlePreferencesSave}
             />
             <MyAccountsSection />
+            {user?.email === ADMIN_EMAIL && <KeywordApprovalsSection />}
             <DangerZone
               onSignOut={handleSignOut}
             />

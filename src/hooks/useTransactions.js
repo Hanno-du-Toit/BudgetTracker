@@ -35,6 +35,40 @@ async function insertInBatches(rows) {
   }
 }
 
+async function recordKeywordSuggestion(userId, descriptionPattern, newCategory) {
+  try {
+    await supabase.from('keyword_suggestions').upsert({
+      description_pattern: descriptionPattern,
+      category: newCategory,
+      suggested_by: userId,
+    }, { onConflict: 'description_pattern,suggested_by' })
+
+    const { data: suggestions } = await supabase
+      .from('keyword_suggestions')
+      .select('category')
+      .eq('description_pattern', descriptionPattern)
+
+    if (suggestions && suggestions.length >= 3) {
+      const categoryCounts = suggestions.reduce((acc, s) => {
+        acc[s.category] = (acc[s.category] || 0) + 1
+        return acc
+      }, {})
+      const topCategory = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]
+      const confidence = topCategory[1] / suggestions.length
+
+      if (confidence >= 0.8) {
+        await supabase.from('pending_keywords').upsert({
+          description_pattern: descriptionPattern,
+          category: topCategory[0],
+          suggestion_count: suggestions.length,
+        }, { onConflict: 'description_pattern' })
+      }
+    }
+  } catch {
+    // Silently ignore — keyword learning is non-critical
+  }
+}
+
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useTransactions() {
@@ -115,6 +149,11 @@ export function useTransactions() {
         .from('category_overrides')
         .upsert(overrides, { onConflict: 'user_id,description_pattern' })
       if (overrideError) throwSupabaseError('category_overrides upsert', overrideError)
+
+      // Record keyword suggestions for community learning
+      await Promise.all(
+        overrides.map((o) => recordKeywordSuggestion(userId, o.description_pattern, o.category))
+      )
     }
 
     return { savedCount: unique.length, duplicateCount, statementId: statement.id, statementMonth }
@@ -177,12 +216,17 @@ export function useTransactions() {
     // Persist the correction as future few-shot context for AI
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
+      const descriptionPattern = normalizePattern(description)
+
       await supabase
         .from('category_overrides')
         .upsert(
-          { user_id: session.user.id, description_pattern: normalizePattern(description), category },
+          { user_id: session.user.id, description_pattern: descriptionPattern, category },
           { onConflict: 'user_id,description_pattern' }
         )
+
+      // Record keyword suggestion for community learning
+      await recordKeywordSuggestion(session.user.id, descriptionPattern, category)
     }
   }, [])
 

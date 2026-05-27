@@ -68,6 +68,13 @@ function findOverrideMatch(description, overrides) {
   return null
 }
 
+// ─── Global community keywords ────────────────────────────────────────────────
+
+export async function fetchGlobalKeywords(supabase) {
+  const { data } = await supabase.from('global_keywords').select('description_pattern, category')
+  return data || []
+}
+
 // ─── Groq AI batch categorization ────────────────────────────────────────────
 
 async function categorizeWithGroq(transactions, onRateLimit, retryCount = 0) {
@@ -133,10 +140,11 @@ If unsure, use "other". Reply with ONLY a valid JSON array, no other text.`,
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Categorize all transactions using a four-tier approach:
+ * Categorize all transactions using a five-tier approach:
  *   Tier 0 — internal transfer detection (own account numbers)
  *   Tier 1 — user overrides (hard match — highest priority)
  *   Tier 2 — SA keyword rules (fast, no API quota)
+ *   Tier 2.5 — global community keywords (admin-approved crowd-sourced patterns)
  *   Tier 3 — Groq AI batched categorization for unmatched transactions
  *   Tier 4 — 'other' if Groq fails or returns nothing
  *
@@ -145,7 +153,8 @@ If unsure, use "other". Reply with ONLY a valid JSON array, no other text.`,
  * Returns a Map<id, category>.
  */
 export async function categorizeAll(transactions, overrides = [], onProgress, options = {}, onRateLimit) {
-  const results = new Map()
+  const results        = new Map()
+  const globalKeywords = options?.globalKeywords ?? []
 
   // Tier 0 — internal transfer detection
   const ownAccounts = options?.userAccountNumbers ?? []
@@ -171,16 +180,30 @@ export async function categorizeAll(transactions, overrides = [], onProgress, op
   onProgress?.(10)
 
   // Tier 2 — keyword rules
-  const forGroq = []
+  const afterKeywords = []
   for (const t of afterOverrides) {
     const category = ruleBasedCategorize(t.description)
     if (category) {
       results.set(t.id, category)
     } else {
-      forGroq.push(t)
+      afterKeywords.push(t)
     }
   }
   onProgress?.(20)
+
+  // Tier 2.5 — global community keywords (admin-approved crowd-sourced patterns)
+  const forGroq = []
+  for (const t of afterKeywords) {
+    const desc = t.description.toLowerCase()
+    const globalMatch = globalKeywords.find((k) =>
+      desc.includes(k.description_pattern.toLowerCase())
+    )
+    if (globalMatch) {
+      results.set(t.id, globalMatch.category)
+    } else {
+      forGroq.push(t)
+    }
+  }
 
   // Tier 3 — Groq AI for anything keywords couldn't match
   if (forGroq.length > 0) {

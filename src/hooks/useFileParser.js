@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { parseCsv } from '@/services/csvParser'
-import { categorizeAll } from '@/services/claudeApi'
+import { categorizeAll, fetchGlobalKeywords } from '@/services/claudeApi'
 import { detectColumns, detectBank } from '@/utils/columnDetector'
 import { normalizeRows } from '@/utils/transactionNormalizer'
 import { MAX_FILE_SIZE_BYTES } from '@/constants/limits'
@@ -78,6 +78,7 @@ export function useFileParser() {
         .from('user_accounts')
         .select('account_number')
       const userAccountNumbers = (accounts ?? []).map((a) => a.account_number)
+      const globalKeywords = await fetchGlobalKeywords(supabase)
       setProgress(55)
 
       // 5 — AI categorize (progress callback maps 0-100 → 55-95%)
@@ -86,7 +87,7 @@ export function useFileParser() {
         txns,
         overrides ?? [],
         (pct) => setProgress(55 + Math.round(pct * 0.4)),
-        { userAccountNumbers },
+        { userAccountNumbers, globalKeywords },
         (seconds) => setRateLimitSeconds(seconds)
       )
 
