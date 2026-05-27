@@ -1,37 +1,7 @@
 import { CATEGORY_SLUGS } from '@/constants/categories'
-import { MAX_TRANSACTIONS_PER_BATCH, MAX_CATEGORY_OVERRIDES_IN_PROMPT } from '@/constants/limits'
 
-const API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL   = 'claude-haiku-4-5-20251001'
-
-// ─── Rule-based categorization ────────────────────────────────────────────────
-
-const CATEGORY_RULES = [
-  { category: 'groceries',     keywords: ['checkers', 'woolworths', 'pick n pay', 'pnp', 'shoprite', 'spar', 'food lover', 'sixty60', 'woollies'] },
-  { category: 'fuel',          keywords: ['engen', 'shell', 'bp ', 'caltex', 'sasol', 'total garage', 'astron', 'uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll', 'sanral'] },
-  { category: 'dining',        keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur', 'fishaways', 'galito', 'draak', 'toro north', 'klipoog', 'kafeteria', 'serv preto'] },
-  { category: 'shopping',      keywords: ['game store', 'makro', 'builder', 'cum books', 'kloppers', 'balloon party', 'takealot'] },
-  { category: 'home_repairs',  keywords: ['builders', 'cashbuild', 'hardware', 'plumber', 'electrician', 'leroy merlin', 'mica'] },
-  { category: 'haircut',       keywords: ['barber', 'hair salon', 'hairdresser', 'cuts', 'hair cut', 'excellent barber', 'hpy*', 'barber shop'] },
-  { category: 'clothing',      keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on', 'woolworths clothing', 'markham', 'exact', 'identity', 'jet store', 'ackermans', 'pep store'] },
-  { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema', 'nu metro', 'ster kinekor', 'playtomic', 'padel circle', 'padel'] },
-  { category: 'healthcare',    keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist', 'medcross'] },
-  { category: 'insurance',     keywords: ['outsurance', 'discovery life', 'momentum', 'sanlam', 'old mutual', 'hollard', 'miway', 'pps '] },
-  { category: 'subscriptions', keywords: ['virgin active', 'virgin act', 'netcash'] },
-  { category: 'banking_fees',  keywords: ['monthly fee', 'bank charge', 'notific fee', 'notification fee', 'transaction fee', 'service fee', 'sms fee', 'notifyme', 'card fee', 'annual fee', 'monthly acc fee', 'acc fee', 'insufficient funds fee', 'funds transfer fee', 'finance charge', 'insufficient funds'] },
-  { category: 'utilities',     keywords: ['eskom', 'municipality', 'water ', 'electricity', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre', 'prepaid', 'airtime', 'rain '] },
-  { category: 'investments',   keywords: ['easy equities', 'ee-', 'easyequities', 'etf', 'satrix'] },
-  { category: 'income',        keywords: ['salary', 'payroll', 'payment received', 'acb credit'] },
-]
-
-export function ruleBasedCategorize(description, amount) {
-  const lower = description.toLowerCase()
-  for (const rule of CATEGORY_RULES) {
-    if (rule.category === 'income' && amount <= 0) continue
-    if (rule.keywords.some((kw) => lower.includes(kw))) return rule.category
-  }
-  return null
-}
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const GROQ_BATCH_SIZE = 20
 
 // ─── Internal transfer detection ─────────────────────────────────────────────
 
@@ -68,159 +38,111 @@ function findOverrideMatch(description, overrides) {
   return null
 }
 
-// ─── Prompt ──────────────────────────────────────────────────────────────────
+// ─── Groq AI batch categorization ────────────────────────────────────────────
 
-export function buildPrompt(transactions, overrides = []) {
-  const categoryList = CATEGORY_SLUGS.join(', ')
+async function categorizeWithGroq(transactions) {
+  const apiKey = import.meta.env.VITE_GROQ_API_KEY
+  if (!apiKey || apiKey.includes('your-key-here')) return null
 
-  let knownMappings = ''
-  if (overrides.length > 0) {
-    const lines = overrides
-      .slice(0, MAX_CATEGORY_OVERRIDES_IN_PROMPT)
-      .map((o) => `  "${o.description_pattern}" → ${o.category}`)
-      .join('\n')
-    knownMappings = `\nKnown merchant mappings for this user (apply these exactly):\n${lines}\n`
-  }
+  const categories = CATEGORY_SLUGS
 
-  const txnPayload = JSON.stringify(
-    transactions.map((t) => ({ id: t.id, description: t.description, amount: t.amount }))
-  )
-
-  return `You are a bank transaction categorizer for South African transactions.
-
-Categorize each transaction into exactly one of: ${categoryList}
-
-Rules:
-- Return ONLY a valid JSON array. No markdown, no explanation, no other text.
-- Format: [{"id":"<id>","category":"<slug>"}]
-- Positive amounts are credits/income → use "income" unless clearly a refund or reversal
-- South African context: "SPAR", "PNP", "WOOLWORTHS FOOD" → groceries; "ENGEN", "SHELL", "BP", "SASOL", "UBER", "BOLT" → fuel; "NETFLIX", "DSTV", "SPOTIFY" → entertainment; "OUTSURANCE", "DISCOVERY", "SANLAM" → insurance; "SERVICE FEE", "BANK CHARGE" → banking_fees; "MR PRICE", "ZARA", "EDGARS" → clothing; "BUILDERS", "CASHBUILD", "HARDWARE" → home_repairs
-- Use "other" only if genuinely uncertain
-${knownMappings}
-Transactions to categorize:
-${txnPayload}`
-}
-
-// ─── Response parser ──────────────────────────────────────────────────────────
-
-export function parseResponse(responseText) {
   try {
-    const cleaned = responseText
-      .replace(/```json\s*/gi, '')
-      .replace(/```\s*/g, '')
-      .trim()
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a South African bank transaction categorizer.
+Given a list of transactions, return a JSON array of category slugs in the same order.
+Categories: ${categories.join(', ')}
+If unsure, use "other". Reply with ONLY a valid JSON array, no other text.`,
+          },
+          {
+            role: 'user',
+            content: JSON.stringify(transactions.map((t) => ({ description: t.description, amount: t.amount }))),
+          },
+        ],
+        temperature: 0,
+        max_tokens: 200,
+      }),
+    })
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+    const text = data.choices?.[0]?.message?.content ?? ''
+    const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim()
     const parsed = JSON.parse(cleaned)
-    if (!Array.isArray(parsed)) return new Map()
-    return new Map(
-      parsed
-        .filter((item) => item?.id && item?.category)
-        .map((item) => [item.id, item.category])
-    )
+    if (!Array.isArray(parsed)) return null
+    return parsed
   } catch {
-    return new Map()
+    return null
   }
-}
-
-// ─── Single batch call ────────────────────────────────────────────────────────
-
-async function categorizeBatch(transactions, overrides) {
-  const apiKey = import.meta.env.VITE_CLAUDE_API_KEY
-
-  // Graceful fallback when key is not configured
-  if (!apiKey || apiKey.includes('your-key-here')) {
-    return new Map(
-      transactions.map((t) => [t.id, t.amount > 0 ? 'income' : 'other'])
-    )
-  }
-
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      // Required for legitimate browser-side usage
-      'anthropic-dangerous-allow-browser': 'true',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 2048,
-      messages: [{ role: 'user', content: buildPrompt(transactions, overrides) }],
-    }),
-  })
-
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({}))
-    throw new Error(body?.error?.message ?? `API error ${response.status}`)
-  }
-
-  const data = await response.json()
-  const text = data.content?.[0]?.text ?? ''
-  return parseResponse(text)
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
  * Categorize all transactions using a three-tier approach:
- *   1. User's saved overrides (hard match — highest priority)
- *   2. Rule-based SA keyword matching
- *   3. Claude AI for anything remaining
+ *   Tier 0 — internal transfer detection (own account numbers)
+ *   Tier 1 — user overrides (hard match — highest priority)
+ *   Tier 2 — Groq AI batched categorization (up to 20 per call)
+ *   Tier 3 — 'other' if Groq fails or returns nothing
  *
  * Calls onProgress(0–100) across the full pipeline.
  * Returns a Map<id, category>.
  */
 export async function categorizeAll(transactions, overrides = [], onProgress, options = {}) {
-  const results   = new Map()
-  const forClaude = []
+  const results = new Map()
 
-  // Tier 0 — internal transfer detection (own account numbers)
+  // Tier 0 — internal transfer detection
   const ownAccounts = options?.userAccountNumbers ?? []
-  const remainingAfterTransfer = []
+  const remaining = []
   for (const t of transactions) {
     if (detectInternalTransfer(t.description, ownAccounts)) {
       results.set(t.id, 'internal_transfer')
     } else {
-      remainingAfterTransfer.push(t)
+      remaining.push(t)
     }
   }
 
-  // Tier 1 — user overrides (exact/partial normalised description match)
-  for (const t of remainingAfterTransfer) {
+  // Tier 1 — user overrides
+  const forGroq = []
+  for (const t of remaining) {
     const match = findOverrideMatch(t.description, overrides)
     if (match) {
       results.set(t.id, match)
     } else {
-      forClaude.push(t)
+      forGroq.push(t)
     }
   }
   onProgress?.(10)
 
-  // Tier 2 — rule-based keyword matching
-  const forAI = []
-  for (const t of forClaude) {
-    const category = ruleBasedCategorize(t.description, t.amount)
-    if (category) {
-      results.set(t.id, category)
-    } else {
-      forAI.push(t)
-    }
-  }
-  onProgress?.(20)
-
-  // Tier 3 — Claude AI for remaining transactions
-  if (forAI.length > 0) {
+  // Tier 2 — Groq AI (batched, up to GROQ_BATCH_SIZE per call)
+  if (forGroq.length > 0) {
     const batches = []
-    for (let i = 0; i < forAI.length; i += MAX_TRANSACTIONS_PER_BATCH) {
-      batches.push(forAI.slice(i, i + MAX_TRANSACTIONS_PER_BATCH))
+    for (let i = 0; i < forGroq.length; i += GROQ_BATCH_SIZE) {
+      batches.push(forGroq.slice(i, i + GROQ_BATCH_SIZE))
     }
 
     for (let i = 0; i < batches.length; i++) {
-      const batchMap = await categorizeBatch(batches[i], overrides)
-      for (const [id, category] of batchMap) {
-        results.set(id, category)
+      const batch = batches[i]
+      const groqCategories = await categorizeWithGroq(batch)
+
+      for (let j = 0; j < batch.length; j++) {
+        const t = batch[j]
+        const cat = groqCategories?.[j]
+        // Tier 3 — fall back to 'other' if Groq failed or returned an invalid slug
+        results.set(t.id, CATEGORY_SLUGS.includes(cat) ? cat : 'other')
       }
-      onProgress?.(20 + Math.round(((i + 1) / batches.length) * 80))
+
+      onProgress?.(10 + Math.round(((i + 1) / batches.length) * 90))
     }
   } else {
     onProgress?.(100)
