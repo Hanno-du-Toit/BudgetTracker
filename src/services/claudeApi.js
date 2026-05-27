@@ -37,6 +37,10 @@ function ruleBasedCategorize(description) {
 
 export function detectInternalTransfer(description, userAccountNumbers = []) {
   const lower = description.toLowerCase()
+
+  // ABSA credit card internal transfer references — always internal regardless of account numbers
+  if (lower.startsWith('h 7456')) return true
+
   const hasAccounts = userAccountNumbers.length > 0
 
   if (hasAccounts) {
