@@ -163,8 +163,10 @@ export function useTransactions() {
   const loadTransactions = useCallback(async ({
     search = '', category = '', month = '', sortBy = 'transaction_date', sortDir = 'desc',
   } = {}) => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return []
+    // getUser() validates the JWT against the server — more reliable than
+    // getSession() which reads a potentially stale local cache
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return []
 
     let query = supabase
       .from('transactions')
@@ -172,7 +174,7 @@ export function useTransactions() {
         'id, transaction_date, description, amount, category, is_manually_categorized, statement_id, ' +
         'statement:statement_id(id, file_name, statement_month)'
       )
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
 
     if (search.trim()) query = query.ilike('description', `%${search.trim()}%`)
     if (category)       query = query.eq('category', category.toLowerCase().trim())
@@ -185,6 +187,7 @@ export function useTransactions() {
     query = query.order(sortBy, { ascending: sortDir === 'asc' }).limit(1000)
 
     const { data, error } = await query
+    console.log('[loadTransactions] user:', user.id, '| category:', category || 'all', '| rows:', data?.length ?? 0, error ? `| error: ${error.message}` : '')
     if (error) throwSupabaseError('transactions fetch', error)
     return data ?? []
   }, [])
