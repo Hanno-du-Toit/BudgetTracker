@@ -75,9 +75,9 @@ export function useTransactions() {
 
   // ── upsertMany (upload flow) ────────────────────────────────────────────
   const upsertMany = useCallback(async (transactions, fileName, manuallyChangedIds, bankName = 'Unknown') => {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    if (sessionError || !session) throw new Error('Session expired — please sign in again.')
-    const userId = session.user.id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) throw new Error('Session expired — please sign in again.')
+    const userId = user.id
 
     // 1 — Duplicate detection: query existing rows matching any of the new dates
     const dates = [...new Set(transactions.map((t) => t.date))]
@@ -221,19 +221,19 @@ export function useTransactions() {
     if (error) throwSupabaseError('category update', error)
 
     // Persist the correction as future few-shot context for AI
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
       const descriptionPattern = normalizePattern(description)
 
       await supabase
         .from('category_overrides')
         .upsert(
-          { user_id: session.user.id, description_pattern: descriptionPattern, category },
+          { user_id: user.id, description_pattern: descriptionPattern, category },
           { onConflict: 'user_id,description_pattern' }
         )
 
       // Record keyword suggestion for community learning
-      await recordKeywordSuggestion(session.user.id, descriptionPattern, category)
+      await recordKeywordSuggestion(user.id, descriptionPattern, category)
     }
   }, [])
 
