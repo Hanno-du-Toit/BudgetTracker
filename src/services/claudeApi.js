@@ -47,6 +47,7 @@ async function categorizeWithGroq(transactions) {
   const categories = CATEGORY_SLUGS
 
   try {
+    console.log('Groq request:', JSON.stringify(transactions.map((t) => ({ description: t.description, amount: t.amount }))))
     const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
@@ -54,7 +55,7 @@ async function categorizeWithGroq(transactions) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         messages: [
           {
             role: 'system',
@@ -73,7 +74,11 @@ If unsure, use "other". Reply with ONLY a valid JSON array, no other text.`,
       }),
     })
 
-    if (!response.ok) return null
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Groq API error:', response.status, errorText)
+      return null
+    }
 
     const data = await response.json()
     const text = data.choices?.[0]?.message?.content ?? ''
