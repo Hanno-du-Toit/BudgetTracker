@@ -129,7 +129,7 @@ export function useTransactions() {
       transaction_date:        t.date,
       description:             t.description,
       amount:                  t.amount,
-      category:                t.category,
+      category:                t.category || 'other',  // never store null — badge fallback hides these from 'other' filter
       is_manually_categorized: manuallyChangedIds.has(t.id),
     }))
 
@@ -177,7 +177,16 @@ export function useTransactions() {
       .eq('user_id', user.id)
 
     if (search.trim()) query = query.ilike('description', `%${search.trim()}%`)
-    if (category)       query = query.eq('category', category.toLowerCase().trim())
+    if (category) {
+      const cat = category.toLowerCase().trim()
+      // Transactions with a NULL category display as 📦 Other in the UI (CategoryBadge
+      // fallback), so the 'other' filter must also match NULL rows or they'll be invisible.
+      if (cat === 'other') {
+        query = query.or('category.eq.other,category.is.null')
+      } else {
+        query = query.eq('category', cat)
+      }
+    }
     if (month) {
       query = query
         .gte('transaction_date', `${month}-01`)
