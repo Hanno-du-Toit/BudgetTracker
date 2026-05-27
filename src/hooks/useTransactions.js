@@ -171,7 +171,11 @@ export function useTransactions() {
       )
 
     if (search.trim()) query = query.ilike('description', `%${search.trim()}%`)
-    if (category)       query = query.eq('category', category.toLowerCase())
+    if (category) {
+      const normalizedCategory = category.toLowerCase().trim()
+      console.log('category filter value:', JSON.stringify(normalizedCategory))
+      query = query.eq('category', normalizedCategory)
+    }
     if (month) {
       query = query
         .gte('transaction_date', `${month}-01`)
@@ -181,6 +185,7 @@ export function useTransactions() {
     query = query.order(sortBy, { ascending: sortDir === 'asc' }).limit(1000)
 
     const { data, error } = await query
+    console.log('query result:', data?.length ?? 0, 'rows', error ?? 'no error')
     if (error) throwSupabaseError('transactions fetch', error)
     return data ?? []
   }, [])
