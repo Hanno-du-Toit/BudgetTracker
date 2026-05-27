@@ -163,19 +163,19 @@ export function useTransactions() {
   const loadTransactions = useCallback(async ({
     search = '', category = '', month = '', sortBy = 'transaction_date', sortDir = 'desc',
   } = {}) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return []
+
     let query = supabase
       .from('transactions')
       .select(
         'id, transaction_date, description, amount, category, is_manually_categorized, statement_id, ' +
         'statement:statement_id(id, file_name, statement_month)'
       )
+      .eq('user_id', session.user.id)
 
     if (search.trim()) query = query.ilike('description', `%${search.trim()}%`)
-    if (category) {
-      const normalizedCategory = category.toLowerCase().trim()
-      console.log('category filter value:', JSON.stringify(normalizedCategory))
-      query = query.eq('category', normalizedCategory)
-    }
+    if (category)       query = query.eq('category', category.toLowerCase().trim())
     if (month) {
       query = query
         .gte('transaction_date', `${month}-01`)
@@ -185,7 +185,6 @@ export function useTransactions() {
     query = query.order(sortBy, { ascending: sortDir === 'asc' }).limit(1000)
 
     const { data, error } = await query
-    console.log('query result:', data?.length ?? 0, 'rows', error ?? 'no error')
     if (error) throwSupabaseError('transactions fetch', error)
     return data ?? []
   }, [])
