@@ -1,7 +1,7 @@
 import { CATEGORY_SLUGS } from '@/constants/categories'
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_BATCH_SIZE = 20
+const GROQ_BATCH_SIZE = 10
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
