@@ -17,6 +17,7 @@ export default function UploadPage() {
   const {
     status, progress,
     transactions, error, fileName, manuallyChangedIds, bankName,
+    rateLimitSeconds,
     parseFile, reset, updateTransactionCategory,
   } = useFileParser()
   const { upsertMany } = useTransactions()
@@ -120,7 +121,7 @@ export default function UploadPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0 } }}
             >
-              <ParseProgress progress={progress} />
+              <ParseProgress progress={progress} rateLimitSeconds={rateLimitSeconds} />
             </motion.div>
           )}
 

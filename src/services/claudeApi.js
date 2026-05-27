@@ -3,6 +3,8 @@ import { CATEGORY_SLUGS } from '@/constants/categories'
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_BATCH_SIZE = 20
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
 // ─── Internal transfer detection ─────────────────────────────────────────────
 
 export function detectInternalTransfer(description, userAccountNumbers = []) {
@@ -40,7 +42,7 @@ function findOverrideMatch(description, overrides) {
 
 // ─── Groq AI batch categorization ────────────────────────────────────────────
 
-async function categorizeWithGroq(transactions) {
+async function categorizeWithGroq(transactions, onRateLimit, retryCount = 0) {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY
   if (!apiKey || apiKey.includes('your-key-here')) return null
 
@@ -77,6 +79,15 @@ If unsure, use "other". Reply with ONLY a valid JSON array, no other text.`,
     if (!response.ok) {
       const errorText = await response.text()
       console.error('Groq API error:', response.status, errorText)
+
+      if (response.status === 429 && retryCount < 1) {
+        const retryMatch = errorText.match(/try again in (\d+\.?\d*)s/)
+        const waitMs = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) * 1000 + 1000 : 10000
+        onRateLimit?.(Math.ceil(waitMs / 1000))
+        await sleep(waitMs)
+        return categorizeWithGroq(transactions, onRateLimit, retryCount + 1)
+      }
+
       return null
     }
 
@@ -101,9 +112,10 @@ If unsure, use "other". Reply with ONLY a valid JSON array, no other text.`,
  *   Tier 3 — 'other' if Groq fails or returns nothing
  *
  * Calls onProgress(0–100) across the full pipeline.
+ * Calls onRateLimit(seconds) when a 429 is hit and retried.
  * Returns a Map<id, category>.
  */
-export async function categorizeAll(transactions, overrides = [], onProgress, options = {}) {
+export async function categorizeAll(transactions, overrides = [], onProgress, options = {}, onRateLimit) {
   const results = new Map()
 
   // Tier 0 — internal transfer detection
@@ -137,8 +149,10 @@ export async function categorizeAll(transactions, overrides = [], onProgress, op
     }
 
     for (let i = 0; i < batches.length; i++) {
+      if (i > 0) await sleep(1000)
+
       const batch = batches[i]
-      const groqCategories = await categorizeWithGroq(batch)
+      const groqCategories = await categorizeWithGroq(batch, onRateLimit)
 
       for (let j = 0; j < batch.length; j++) {
         const t = batch[j]

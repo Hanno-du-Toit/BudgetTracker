@@ -35,6 +35,7 @@ export function useFileParser() {
   const [fileName,           setFileName]           = useState('')
   const [manuallyChangedIds, setManuallyChangedIds] = useState(() => new Set())
   const [bankName,           setBankName]           = useState('Unknown')
+  const [rateLimitSeconds,   setRateLimitSeconds]   = useState(0)
 
   const parseFile = useCallback(async (file) => {
     setStatus('parsing')
@@ -85,7 +86,8 @@ export function useFileParser() {
         txns,
         overrides ?? [],
         (pct) => setProgress(55 + Math.round(pct * 0.4)),
-        { userAccountNumbers }
+        { userAccountNumbers },
+        (seconds) => setRateLimitSeconds(seconds)
       )
 
       // 6 — Apply categories; fall back to 'other' for any Claude missed
@@ -95,6 +97,7 @@ export function useFileParser() {
       }))
 
       setProgress(100)
+      await new Promise(resolve => setTimeout(resolve, 700))
       setTransactions(categorized)
       setStatus('review')
     } catch (err) {
@@ -120,11 +123,13 @@ export function useFileParser() {
     setFileName('')
     setManuallyChangedIds(new Set())
     setBankName('Unknown')
+    setRateLimitSeconds(0)
   }, [])
 
   return {
     status, progress, parseStep, isAiStep,
     transactions, error, fileName, manuallyChangedIds, bankName,
+    rateLimitSeconds,
     parseFile, reset, updateTransactionCategory,
   }
 }
