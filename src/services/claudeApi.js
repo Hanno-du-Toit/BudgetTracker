@@ -5,6 +5,34 @@ const GROQ_BATCH_SIZE = 10
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
+// ─── Rule-based categorization ────────────────────────────────────────────────
+
+const CATEGORY_RULES = [
+  { category: 'groceries',     keywords: ['checkers', 'woolworths', 'pick n pay', 'pnp', 'shoprite', 'spar', 'food lover', 'sixty60', 'woollies', 'econofoods', 'superspar', 'mahems'] },
+  { category: 'fuel',          keywords: ['engen', 'shell', 'bp ', 'caltex', 'sasol', 'total garage', 'astron', 'uber', 'bolt', 'taxi', 'gautrain', 'parking', 'e-toll', 'etoll', 'sanral', 'payshap ext credit', 'petrol', 'lift'] },
+  { category: 'dining',        keywords: ['mcdonald', 'kfc', 'steers', 'nando', 'wimpy', 'debonairs', 'pizza', 'restaurant', 'cafe', 'coffee', 'spur', 'fishaways', 'galito', 'toro north', 'klipoog', 'kafeteria', 'draak', 'serv preto', 'texas rock', 'castle house', 'tightrope', 'door 1', 'music cafe', 'bakehouse', 'hennies', 'elgro', 'alan smith', 'padstal', 'ubunye'] },
+  { category: 'shopping',      keywords: ['game store', 'makro', 'cum books', 'kloppers', 'balloon party', 'takealot', 'skinphd'] },
+  { category: 'clothing',      keywords: ['mr price', 'mrp', 'zara', 'h&m', 'edgars', 'truworths', 'cotton on', 'markham', 'exact', 'identity', 'jet store', 'ackermans', 'pep store', 'jam clothing'] },
+  { category: 'entertainment', keywords: ['netflix', 'showmax', 'spotify', 'dstv', 'steam', 'playstation', 'cinema', 'nu metro', 'ster kinekor', 'playtomic', 'padel', 'quicket', 'snowflake', 'menlo padel', 'techno padel', 'padel circle'] },
+  { category: 'healthcare',    keywords: ['clicks', 'dischem', 'pharmacy', 'doctor', 'hospital', 'mediclinic', 'netcare', 'dentist', 'medcross'] },
+  { category: 'insurance',     keywords: ['outsurance', 'discovery life', 'momentum', 'sanlam', 'old mutual', 'hollard', 'miway', 'pps'] },
+  { category: 'banking_fees',  keywords: ['monthly fee', 'bank charge', 'notific fee', 'notification fee', 'transaction fee', 'service fee', 'sms fee', 'notifyme', 'card fee', 'annual fee', 'monthly acc fee', 'acc fee', 'insufficient funds fee', 'funds transfer fee', 'finance charge', 'airtime debit', 'decl pos tran fee'] },
+  { category: 'utilities',     keywords: ['eskom', 'municipality', 'water ', 'electricity', 'vodacom', 'mtn', 'cell c', 'telkom', 'fibre', 'prepaid', 'airtime', 'rain', 'perfect water'] },
+  { category: 'subscriptions', keywords: ['virgin active', 'virgin act', 'netcash', 'apple.com/bill', 'apple.com'] },
+  { category: 'investments',   keywords: ['easy equities', 'ee-', 'easyequities', 'etf', 'satrix'] },
+  { category: 'haircut',       keywords: ['excellent barber', 'hpy*', 'barber shop', 'barber', 'hair salon', 'hairdresser'] },
+  { category: 'home_repairs',  keywords: ['builders', 'cashbuild', 'hardware', 'plumber', 'electrician', 'leroy merlin', 'mica'] },
+  { category: 'education',     keywords: ['university', 'school', 'college', 'ekrp', 'notes', 'books'] },
+]
+
+function ruleBasedCategorize(description) {
+  const lower = description.toLowerCase()
+  for (const rule of CATEGORY_RULES) {
+    if (rule.keywords.some((k) => lower.includes(k))) return rule.category
+  }
+  return null
+}
+
 // ─── Internal transfer detection ─────────────────────────────────────────────
 
 export function detectInternalTransfer(description, userAccountNumbers = []) {
@@ -105,11 +133,12 @@ If unsure, use "other". Reply with ONLY a valid JSON array, no other text.`,
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Categorize all transactions using a three-tier approach:
+ * Categorize all transactions using a four-tier approach:
  *   Tier 0 — internal transfer detection (own account numbers)
  *   Tier 1 — user overrides (hard match — highest priority)
- *   Tier 2 — Groq AI batched categorization (up to 20 per call)
- *   Tier 3 — 'other' if Groq fails or returns nothing
+ *   Tier 2 — SA keyword rules (fast, no API quota)
+ *   Tier 3 — Groq AI batched categorization for unmatched transactions
+ *   Tier 4 — 'other' if Groq fails or returns nothing
  *
  * Calls onProgress(0–100) across the full pipeline.
  * Calls onRateLimit(seconds) when a 429 is hit and retried.
@@ -130,18 +159,30 @@ export async function categorizeAll(transactions, overrides = [], onProgress, op
   }
 
   // Tier 1 — user overrides
-  const forGroq = []
+  const afterOverrides = []
   for (const t of remaining) {
     const match = findOverrideMatch(t.description, overrides)
     if (match) {
       results.set(t.id, match)
     } else {
-      forGroq.push(t)
+      afterOverrides.push(t)
     }
   }
   onProgress?.(10)
 
-  // Tier 2 — Groq AI (batched, up to GROQ_BATCH_SIZE per call)
+  // Tier 2 — keyword rules
+  const forGroq = []
+  for (const t of afterOverrides) {
+    const category = ruleBasedCategorize(t.description)
+    if (category) {
+      results.set(t.id, category)
+    } else {
+      forGroq.push(t)
+    }
+  }
+  onProgress?.(20)
+
+  // Tier 3 — Groq AI for anything keywords couldn't match
   if (forGroq.length > 0) {
     const batches = []
     for (let i = 0; i < forGroq.length; i += GROQ_BATCH_SIZE) {
@@ -157,11 +198,11 @@ export async function categorizeAll(transactions, overrides = [], onProgress, op
       for (let j = 0; j < batch.length; j++) {
         const t = batch[j]
         const cat = groqCategories?.[j]
-        // Tier 3 — fall back to 'other' if Groq failed or returned an invalid slug
+        // Tier 4 — fall back to 'other' if Groq failed or returned an invalid slug
         results.set(t.id, CATEGORY_SLUGS.includes(cat) ? cat : 'other')
       }
 
-      onProgress?.(10 + Math.round(((i + 1) / batches.length) * 90))
+      onProgress?.(20 + Math.round(((i + 1) / batches.length) * 80))
     }
   } else {
     onProgress?.(100)
