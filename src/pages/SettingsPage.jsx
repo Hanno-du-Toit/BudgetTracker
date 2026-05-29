@@ -11,7 +11,7 @@ import PageWrapper from '@/components/layout/PageWrapper'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
-const ADMIN_EMAIL = 'hanno.shark@gmail.com'
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
 
 // ── Section card ───────────────────────────────────────────────────────────────
 

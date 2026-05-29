@@ -38,23 +38,15 @@ function ruleBasedCategorize(description) {
 export function detectInternalTransfer(description, userAccountNumbers = []) {
   const lower = description.toLowerCase()
 
-  // ABSA credit card internal transfer references — always internal regardless of account numbers
-  if (lower.startsWith('h 7456')) return true
+  if (userAccountNumbers.length === 0) return false
 
-  const hasAccounts = userAccountNumbers.length > 0
-
-  if (hasAccounts) {
-    if (lower.includes('digital transf dt absa bank h') || lower.includes('digital transf cr absa bank h')) return true
-    if (lower.includes('inetbnk trf credit absa bank h')) return true
-  }
-
-  const isTransfer = lower.includes('digital transf') || lower.includes('digital payment dt') || lower.includes('digital payment cr')
-  if (!isTransfer) return false
   const normalizedDesc = lower.replace(/[-\s]/g, '')
-  return userAccountNumbers.some((acc) => {
-    const normalizedAcc = acc.replace(/[-\s]/g, '')
-    return normalizedDesc.includes(normalizedAcc)
-  })
+  if (userAccountNumbers.some((acc) => normalizedDesc.includes(acc.toLowerCase().replace(/[-\s]/g, '')))) return true
+
+  if (lower.includes('digital transf dt absa bank h') || lower.includes('digital transf cr absa bank h')) return true
+  if (lower.includes('inetbnk trf credit absa bank h')) return true
+
+  return false
 }
 
 // ─── Override matching ────────────────────────────────────────────────────────
